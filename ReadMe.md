@@ -1,6 +1,6 @@
 # ReadMe
 
-Erstellung eines R-Packets zur Implementierung Zufälliger Wälder.\
+Erstellung eines R-Packets zur Implementierung Zufälliger Wälder .\
 \
 Random Forests sind Verfahren, die zur Klassifikation und Regression benutzt werden können.\
 Ein Random Forest besteht aus mehreren Entscheidungsbäumen.\
