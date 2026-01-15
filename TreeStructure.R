@@ -16,11 +16,15 @@ createSinData <- function(n){
 createSinData(100)
 
 # data modelling example 6.3
-createSinDataExample <- function(n, sigma = 0.2){
-  x <- runif(n, 0, 1)                   # X ~ U[0,1]
-  eps <- rnorm(n, mean = 0, sd = sigma) # ε ~ N(0, σ²)
-  y <- sin(2 * pi * x) + eps            # model
+createSinDataExample <- function(n, sigma = 0.2, plot = TRUE) {
+  x <- runif(n, 0, 1)
+  eps <- rnorm(n, mean = 0, sd = sigma)
+  y <- sin(2 * pi * x) + eps
   
-  plot(x, y, pch = 5)
-  return(data.frame(x = x, y = y))
+  if (plot) {
+    plot(x, y, pch = 5, main = "Noisy sin(2πx)")
+  }
+  
+  data.frame(x = x, y = y)
 }
+createSinDataExample(200)
