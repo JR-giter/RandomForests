@@ -4,3 +4,4 @@ library(AmesHousing)
 library(tidyverse)
 ames<- make_ames()
 glimpse(ames)
+
