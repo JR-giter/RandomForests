@@ -1,5 +1,6 @@
 source("globals.R")
 source("Greedy_Regression_Classification.R")
+# Code for UI
 
 ui <- page_sidebar(
   title = "Greedy CART Regression",
