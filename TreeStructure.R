@@ -28,3 +28,6 @@ createSinDataExample <- function(n, sigma = 0.2, plot = TRUE) {
   data.frame(x = x, y = y)
 }
 createSinDataExample(200)
+
+
+       
