@@ -1,5 +1,6 @@
 source("globals.R")
-source("Greedy_Regression_Classification.R")
+source("Greedy_Cart.R")
+source("Plotting_Trees.R")
 # Code for UI
 
 ui <- page_sidebar(
