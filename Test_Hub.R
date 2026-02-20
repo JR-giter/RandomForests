@@ -1,5 +1,6 @@
-source(Greedy_Cart.R)
-source(Plotting_Trees.R)
+source("Greedy_Cart.R")
+source("Plotting_Trees.R")
+source("Pruning.R")
 ############################################################
 ## EXAMPLE DATA FOR REGRESSION
 ############################################################
@@ -42,25 +43,28 @@ createClassificationDataExample <- function(n, sigma = 0.2){
 ## EXAMPLE G-CART CLASSIFICATION ALGORITHM
 ############################################################
 
-{
-  data <- createClassificationDataExample(10)
-  tree_cla <- greedy_cart_classification(data$X, data$Y)
-  plot_cart_tree(tree_cla)
-}
+# {
+#   data <- createClassificationDataExample(10)
+#   tree_cla <- greedy_cart_classification(data$X, data$Y)
+#   plot_cart_tree(tree_cla)
+# }
 
 ############################################################
 ## EXAMPLE G-CART REGRESSION ALGORITHM
 ############################################################
 
-{
-  # input_data <- matrix(c(1, 2, 3, 4, 5), ncol = 1)
-  # target_variable <- c(2, 3, 2, 8, 9)
-  # tree <- greedy_cart_regression(input_data, target_variable)
-  # plot_cart_tree(tree)
-  
-  data <- createSinDataExample(20)
-  input_data <- matrix(data$x, ncol=1)
-  target_variable <- matrix(data$y)
-  tree_reg <- greedy_cart_regression(input_data, target_variable)
-  plot_cart_tree(tree_reg)
-}
+# {
+#   input_data <- matrix(c(1, 2, 3, 4, 5), ncol = 1)
+#   target_variable <- c(2, 3, 2, 8, 9)
+#   tree <- greedy_cart_regression(input_data, target_variable)
+#   plot_cart_tree(tree)
+# 
+#   data <- createSinDataExample(20)
+#   input_data <- matrix(data$x, ncol=1)
+#   target_variable <- matrix(data$y)
+#   tree_reg <- greedy_cart_regression(input_data, target_variable)
+#   plot_cart_tree(tree_reg)
+# }
+
+
+

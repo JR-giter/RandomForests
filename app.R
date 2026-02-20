@@ -1,6 +1,7 @@
 source("globals.R")
 source("Greedy_Cart.R")
 source("Plotting_Trees.R")
+source("Test_Hub.R")
 # Code for UI
 
 ui <- page_sidebar(
@@ -41,5 +42,4 @@ server <- function(input, output, session) {
     
   })
 }
-
 shinyApp(ui, server)
