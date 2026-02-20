@@ -25,7 +25,7 @@ server <- function(input, output, session) {
   
   output$treePlot <- renderPlot({
     
-    # reset global node counter (VERY IMPORTANT)
+    # reset global node counter
     .node_id_counter <<- 0
     
     # generate data depending on slider
