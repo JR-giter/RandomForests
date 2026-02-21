@@ -30,7 +30,10 @@ server <- function(input, output, session) {
   
   output$treePlot <- renderPlot({
     
-    
+
+    # reset global node counter
+    .node_id_counter <<- 0
+
     .node_id_counter <<- 0  # Counter für IDs zurücksetzen
     
     
