@@ -66,6 +66,7 @@ greedy_cart_regression <- function(input_data, target_variable) {
           
           left_child_node_indices  <- node_indices[current_feature < s]
           right_child_node_indices <- node_indices[current_feature >= s]
+          if (length(left_child_node_indices) == 0 || length(right_child_node_indices) == 0) next
           
           # constants calculation
           c1 <- mean(target_variable[left_child_node_indices])

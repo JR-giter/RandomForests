@@ -2,6 +2,11 @@ source("globals.R")
 source("Greedy_Cart.R")
 source("Plotting_Trees.R")
 source("Test_Hub.R")
+source("AlgorithmApplication.R")
+
+
+
+
 # Code for UI
 
 ui <- page_sidebar(
@@ -25,21 +30,22 @@ server <- function(input, output, session) {
   
   output$treePlot <- renderPlot({
     
-    # reset global node counter (VERY IMPORTANT)
-    .node_id_counter <<- 0
     
-    # generate data depending on slider
-    data <- createSinDataExample(input$n)
+    .node_id_counter <<- 0  # Counter für IDs zurücksetzen
     
-    input_data <- matrix(data$x, ncol = 1)
-    target_variable <- data$y
     
-    # build tree
-    tree <- greedy_cart_regression(input_data, target_variable)
+    tree <- GreedyCart(dataSet = ames,
+                       n_properties = 3,
+                       n_nodes = input$n,
+                       mode = "regression",
+                       target = "Sale_Price")
     
-    # plot
+    
+    # plott tree
     plot_cart_tree(tree)
-    
   })
 }
+
+
+
 shinyApp(ui, server)
