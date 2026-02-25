@@ -167,4 +167,4 @@ cart_prune_ccp <- function(tree, y, lambda) {
     sequence = seq,
     optimal_tree = best
   )
-}s
+}
