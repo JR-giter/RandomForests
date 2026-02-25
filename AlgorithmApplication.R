@@ -33,9 +33,14 @@ GreedyCart <-  function(dataSet, n_properties, n_nodes, mode = "regression", tar
   
   
   # get n datapoints out of dataSet (slider)
-  set.seed(1)
-  idx <- sample(seq_len(nrow(dataSet)), n_nodes)
-  dataSub <- dataSet[idx, ]
+  #set.seed(1)
+  #idx <- sample(seq_len(nrow(dataSet)), n_nodes)
+  #dataSub <- dataSet[idx, ]
+  
+  #get the first n datapoints of the dataset
+  dataSub <- dataSet[seq_len(n_nodes), ]
+  
+  
   
   
   
@@ -59,8 +64,6 @@ GreedyCart <-  function(dataSet, n_properties, n_nodes, mode = "regression", tar
 
   # create Matrix
   input_matrix <- as.matrix(reduced_data)
-  print(input_matrix)
-  print(unique(input_matrix[,1]))
   
   
   # select target
