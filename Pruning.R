@@ -1,188 +1,170 @@
-# Pruning cuts unnecessary splits from a decision tree after training.
-# This prevents overfitting and improves prediction accuracy on new data.
-# It also makes the model smaller and easier to understand.
-
-############################################################
-## COST-COMPLEXITY PRUNING FOR GREEDY CART TREES
-############################################################
-
-############################################################
-## TREE HELPERS
-############################################################
-
-
+###
+#
+# Pruning Implementation
+# Input: Tree from Greey CART
+# Output: Firstly Sequence of Pruned Trees, then optimal Tree depending on lambda
+#
+##
 is_leaf <- function(node) {
-  is.null(node$split_feature_j)
+  is.null(node$left_child) && is.null(node$right_child)
 }
 
-get_leaves <- function(node) {
-  if (is_leaf(node)) return(list(node))
-  c(get_leaves(node$left_child),
-    get_leaves(node$right_child))
+num_leaves <- function(node) {
+  if (is_leaf(node)) return(1)
+  num_leaves(node$left_child) + num_leaves(node$right_child)
 }
 
-count_leaves <- function(node) {
-  length(get_leaves(node))
+clone_tree <- function(node) {
+  new <- new.env(parent = emptyenv())
+  
+  new$id <- node$id
+  new$indices <- node$indices
+  new$split_feature_j <- node$split_feature_j
+  new$split_value_i <- node$split_value_i
+  new$prediction <- node$prediction
+  
+  if (!is.null(node$left_child))
+    new$left_child <- clone_tree(node$left_child)
+  else
+    new$left_child <- NULL
+  
+  if (!is.null(node$right_child))
+    new$right_child <- clone_tree(node$right_child)
+  else
+    new$right_child <- NULL
+  
+  new
+}
+# Risk Funktionen
+node_risk <- function(node, y) {
+  
+  idx <- node$indices
+  
+  if (length(idx) == 0)
+    return(0)
+  
+  pred <- mean(y[idx])
+  
+  sum((y[idx] - pred)^2)
 }
 
-############################################################
-## RISK OF A NODE (REGRESSION OR CLASSIFICATION)
-############################################################
-
-node_risk <- function(node, target_variable, type = "regression") {
+subtree_risk <- function(node, y) {
   
-  y <- target_variable[node$indices]
+  if (is.null(node$left_child))
+    return(node_risk(node, y))
   
-  if (type == "regression") {
-    
-    pred <- mean(y)
-    return(sum((y - pred)^2))
-    
-  } else {
-    
-    majority <- names(which.max(table(y)))
-    return(sum(y != majority))
-  }
+  subtree_risk(node$left_child, y) +
+    subtree_risk(node$right_child, y)
 }
 
-############################################################
-## TOTAL TREE RISK
-############################################################
-
-tree_risk <- function(node, target_variable, type="regression") {
+# Compute G
+compute_g <- function(node, y, result=list()) {
   
-  leaves <- get_leaves(node)
+  if (is_leaf(node))
+    return(result)
   
-  sum(sapply(leaves, function(l)
-    node_risk(l, target_variable, type)))
-}
-
-############################################################
-## COMPUTE ALPHA FOR EACH INTERNAL NODE
-############################################################
-
-compute_alpha_values <- function(node, target_variable, type="regression") {
+  Rt <- node_risk(node, y)
+  RTt <- subtree_risk(node, y)
+  leaves <- num_leaves(node)
   
-  result <- list()
+  g <- (Rt - RTt) / (leaves - 1)
   
-  recurse <- function(node) {
-    
-    if (is_leaf(node)) return()
-    
-    subtree_leaves <- get_leaves(node)
-    
-    if (length(subtree_leaves) > 1) {
-      
-      R_t <- node_risk(node, target_variable, type)
-      
-      R_Tt <- sum(
-        sapply(subtree_leaves,
-               function(l) node_risk(l, target_variable, type))
-      )
-      
-      alpha <- (R_t - R_Tt) / (length(subtree_leaves) - 1)
-      
-      result[[length(result)+1]] <<- list(
-        node=node,
-        alpha=alpha
-      )
-    }
-    
-    recurse(node$left_child)
-    recurse(node$right_child)
-  }
+  result[[length(result)+1]] <- list(
+    node=node,
+    g=g
+  )
   
-  recurse(node)
+  result <- compute_g(node$left_child, y, result)
+  result <- compute_g(node$right_child, y, result)
   
   result
 }
-
-############################################################
-## PRUNE NODE
-############################################################
-
-prune_node <- function(node, target_variable, type="regression") {
+###
+# Pruning
+###
+prune_node <- function(node) {
   
-  y <- target_variable[node$indices]
+  if (is.null(node$id) || length(node$id)==0)
+    node$id <- new_node_id()
   
-  if (type=="regression")
-    node$prediction <- mean(y)
-  else
-    node$prediction <- names(which.max(table(y)))
+  node$left_child <- NULL
+  node$right_child <- NULL
   
   node$split_feature_j <- NULL
   node$split_value_i <- NULL
-  node$left_child <- NULL
-  node$right_child <- NULL
 }
 
-############################################################
-## COST COMPLEXITY PRUNING SEQUENCE
-############################################################
-
-cost_complexity_pruning <- function(root,
-                                    target_variable,
-                                    type="regression") {
+cost_complexity_sequence <- function(tree, y) {
   
-  trees <- list()
+  seq <- list()
   alphas <- c()
   
-  current_tree <- root
+  current <- clone_tree(tree)
+  seq[[1]] <- clone_tree(current)
   
   repeat {
     
-    trees[[length(trees)+1]] <- current_tree
+    g_list <- compute_g(current, y)
     
-    alpha_candidates <-
-      compute_alpha_values(current_tree,
-                           target_variable,
-                           type)
-    
-    if (length(alpha_candidates) == 0)
+    if (length(g_list) == 0)
       break
     
-    alpha_values <- sapply(alpha_candidates,
-                           function(x) x$alpha)
+    g_values <- sapply(g_list, function(x) x$g)
+    min_index <- which.min(g_values)
     
-    alpha_min <- min(alpha_values)
+    alpha <- g_values[min_index]
+    node_to_prune <- g_list[[min_index]]$node
     
-    alphas <- c(alphas, alpha_min)
+    prune_node(node_to_prune)
     
-    weakest_nodes <-
-      alpha_candidates[alpha_values == alpha_min]
+    seq[[length(seq)+1]] <- clone_tree(current)
+    alphas <- c(alphas, alpha)
     
-    for (entry in weakest_nodes)
-      prune_node(entry$node,
-                 target_variable,
-                 type)
+    if (is_leaf(current))
+      break
   }
   
   list(
-    trees = trees,
+    trees = seq,
     alphas = alphas
   )
 }
 
-############################################################
-## SELECT TREE FOR GIVEN LAMBDA
-############################################################
 
-select_tree_lambda <- function(pruning_result,
-                               lambda,
-                               target_variable,
-                               type="regression") {
+select_tree_lambda <- function(sequence, lambda, y) {
   
-  trees <- pruning_result$trees
+  best_score <- Inf
+  best_tree <- NULL
   
-  scores <- sapply(trees, function(tree) {
+  for (i in seq_along(sequence$trees)) {
     
-    tree_risk(tree, target_variable, type) +
-      lambda * count_leaves(tree)
+    tree <- sequence$trees[[i]]
     
-  })
-  
-  trees[[which.min(scores)]]
+    R <- subtree_risk(tree, y)
+    size <- num_leaves(tree)
+    
+    score <- R + lambda * size
+    
+    # cat("Tree", i,
+    #     "| leaves =", size,
+    #     "| Risk =", R,
+    #     "| Score =", score, "\n")
+    
+    if (score < best_score) {
+      best_score <- score
+      best_tree <- tree
+    }
+  }
+  best_tree
 }
 
+cart_prune_ccp <- function(tree, y, lambda) {
 
+  seq <- cost_complexity_sequence(tree, y)
+  best <- select_tree_lambda(seq, lambda, y)
 
+  list(
+    sequence = seq,
+    optimal_tree = best
+  )
+}s
