@@ -10,6 +10,7 @@
 ## TREE HELPERS
 ############################################################
 
+
 is_leaf <- function(node) {
   is.null(node$split_feature_j)
 }
@@ -183,11 +184,5 @@ select_tree_lambda <- function(pruning_result,
   trees[[which.min(scores)]]
 }
 
-tree <- greedy_cart_regression(X, y)
 
-pruning <- cost_complexity_pruning(tree, y, "regression")
 
-best_tree <- select_tree_lambda(pruning,
-                                lambda = 10,
-                                target_variable = y,
-                                type="regression")

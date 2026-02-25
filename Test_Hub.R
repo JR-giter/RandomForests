@@ -131,3 +131,19 @@ ggplot() +
     fill = "Legend"
   ) +
   theme_minimal()
+
+
+##### Pruning
+data <- createSinDataExample(20)
+input_data <- matrix(data$x, ncol=1)
+target_variable <- matrix(data$y)
+tree <- greedy_cart_regression(input_data, target_variable)
+plot_cart_tree(tree)
+
+pruning <- cost_complexity_pruning(tree, target_variable, "regression")
+
+best_tree <- select_tree_lambda(pruning,
+                                lambda = 10,
+                                target_variable = target_variable,
+                                type="regression")
+plot_cart_tree(best_tree)
