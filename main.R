@@ -8,6 +8,7 @@ source("Preprocessing.R")
 source("Greedy_Cart.R")
 source("Plotting_Trees.R")
 source("AlgorithmApplication.R")
+source("Bagging.R")
 
 # =============================================================
 # SECTION: Loading Testing Data
@@ -57,5 +58,25 @@ ames<- make_ames()
 # TEST 4: Bagging
 # TODO
 {
+  # generating bagging models
+  models <- bagging_greedycart( data = ames,
+                                n_bootstrapSamples = 10,
+                                n_properties = 20,
+                                n_nodes = 100, # takes the first n data points out of data
+                                target = "Sale_Price")
   
+  # plotting each tree
+  # for(i in seq_along(models)) {
+  #   cat("Plotting tree", i, "\n")
+  #   print(plot_cart_tree(models[[i]]))
+  # }
+  
+  # generating tests + results
+  test_results <- test_bagging(models = models,
+                               dataPoints = ames[120:130,],
+                               mode = "regression",
+                               target = "Sale_Price")
+  
+  # printing + plotting results
+  show_results(test_results)
 }

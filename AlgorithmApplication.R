@@ -1,4 +1,34 @@
+# visualizing results
+show_results <- function(test_results){
+  # comparing test results to actual results 
+  print(test_results)
+  
+  print(
+    c(
+      max = max(test_results$delta, na.rm = TRUE),
+      mean = mean(test_results$delta, na.rm = TRUE),
+      median = median(test_results$delta, na.rm = TRUE)
+    )
+  )
+  
+  # plotting results
+  
+  hist(test_results$delta,
+       breaks = 40,
+       main = "Distribution of Percentage Delta",
+       xlab = "Delta (%)",
+       col = "steelblue",
+       border = "white")
+  
+  plot(density(test_results$delta),
+       main = "Density of Percentage Delta",
+       xlab = "Delta (%)",
+       lwd = 2)
+}
 
+# =============================================================
+# Greedy CART
+# =============================================================
 
 # prepares data before using
 prepare_data <- function(dataSet, n_properties, target_property, filter_mode = "numeric"){
@@ -36,8 +66,6 @@ prepare_data <- function(dataSet, n_properties, target_property, filter_mode = "
   ))
 }
 
-
-
 # generating a greedy Cart Tree
 GreedyCart <-  function(dataSet, n_properties, n_nodes, mode = "regression", target = "Sale_Price"){
   
@@ -72,7 +100,18 @@ GreedyCart <-  function(dataSet, n_properties, n_nodes, mode = "regression", tar
   return(tree)
 }
 
-#### TESTING FUNCTIONS
+# generating a cart tree based on dataset,...
+generate_cart_tree <- function(data_set, number_properties, number_nodes, mode, target_variable){
+  tree <- GreedyCart(
+    dataSet = data_set,
+    n_properties = number_properties,
+    n_nodes = number_nodes,
+    mode = mode,
+    target = target_variable
+  )
+  
+  return(tree)
+}
 
 # finding prediction result for single "dataPoint" inside "tree"
 predict_cart <- function(tree, dataPoint) {
@@ -115,49 +154,42 @@ test_cart <- function(tree, dataPoints, mode = "regression", target = "Sale_Pric
   return(result)
 }
 
-# generating a cart tree based on dataset,...
-generate_cart_tree <- function(data_set, number_properties, number_nodes, mode, target_variable){
-  tree <- GreedyCart(
-    dataSet = data_set,
-    n_properties = number_properties,
-    n_nodes = number_nodes,
-    mode = mode,
-    target = target_variable
-  )
+
+# =============================================================
+# Bagging
+# =============================================================
+
+# testing bagging_trees
+test_bagging <- function(models, dataPoints, mode = "regression", target) {
+  # Extract features used by the first tree
+  X <- as.matrix(dataPoints[, models[[1]]$properties, drop = FALSE])
   
-  return(tree)
+  # Get actual target
+  y <- dataPoints[[target]]
+  
+  # Initialize matrix to store predictions
+  pred_matrix <- matrix(NA, nrow = nrow(X), ncol = length(models))
+  
+  # Loop over each model
+  for (i in seq_along(models)) {
+    tree <- models[[i]]
+    pred_matrix[, i] <- apply(X, 1, function(row) predict_cart(tree, row))
+  }
+  
+  # Bagged predictions (average for regression)
+  bagged_preds <- rowMeans(pred_matrix)
+  
+  # Create result data frame
+  result <- data.frame(actual = y, prediction = bagged_preds)
+  
+  # Calculate delta for regression
+  if (mode == "regression") {
+    result$delta <- abs(y - bagged_preds) / y * 100
+  }
+  
+  return(result)
 }
-
-# visualizing results
-show_results <- function(test_results){
-  # comparing test results to actual results 
-  print(test_results)
-  
-  print(
-    c(
-      max = max(test_results$delta, na.rm = TRUE),
-      mean = mean(test_results$delta, na.rm = TRUE),
-      median = median(test_results$delta, na.rm = TRUE)
-    )
-  )
-  
-  # plotting results
-  
-  hist(test_results$delta,
-       breaks = 40,
-       main = "Distribution of Percentage Delta",
-       xlab = "Delta (%)",
-       col = "steelblue",
-       border = "white")
-  
-  plot(density(test_results$delta),
-       main = "Density of Percentage Delta",
-       xlab = "Delta (%)",
-       lwd = 2)
-}
-
-
-
+ 
 
 
 
