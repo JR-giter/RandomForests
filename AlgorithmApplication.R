@@ -1,9 +1,4 @@
-library(dplyr)
-library(AmesHousing)
-library(tidyverse)
-source("Preprocessing.R")
-source("Greedy_Cart.R")
-source("Plotting_Trees.R")
+
 
 # prepares data before using
 prepare_data <- function(dataSet, n_properties, target_property, filter_mode = "numeric"){
@@ -161,27 +156,7 @@ show_results <- function(test_results){
        lwd = 2)
 }
 
-##### ACTUAL TESTING 
-{
-  # generating cart tree
-  cart_tree <- generate_cart_tree(data_set = ames, 
-                                  number_properties = 20, 
-                                  number_nodes = 100, 
-                                  mode = "regression",
-                                  target_variable = "Sale_Price")
-  
-  
-  # generating tests + results
-  test_results <- test_cart(
-    tree = cart_tree,
-    dataPoints = ames[120:130,], 
-    mode = "regression",
-    target = "Sale_Price"
-  )
-  
-  # printing + plotting results
-  show_results(test_results)
-}
+
 
 
 

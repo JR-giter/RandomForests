@@ -1,7 +1,3 @@
-#############################################################
-## BASIC-NODE STRUCTURE
-#############################################################
-
 new_node <- function(indices, prediction,
                      split_feature_j = NULL,
                      split_value_i = NULL,
@@ -20,9 +16,9 @@ new_node <- function(indices, prediction,
   node
 }
 
-############################################################
-## GREEDY CART REGRESSION ALGORITHM
-############################################################
+#=============================================================
+# GREEDY CART REGRESSION ALGORITHM
+#=============================================================
 
 greedy_cart_regression <- function(input_data, target_variable) {
   
@@ -128,9 +124,9 @@ greedy_cart_regression <- function(input_data, target_variable) {
 }
 
 
-############################################################
-## GREEDY CART CLASSIFICATION ALGORITHM
-############################################################
+#=============================================================
+# GREEDY CART CLASSIFICATION ALGORITHM
+#=============================================================
 
 greedy_cart_classification <- function(input_data, target_variable) {
   

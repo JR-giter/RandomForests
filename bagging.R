@@ -1,9 +1,3 @@
-source("AlgorithmApplication.R")
-source("Plotting_Trees.R")
-
-
-
-
 bootstrap_sample <- function(dataSet) {
   n <- nrow(dataSet)
   idx <- sample(seq_len(n), size = n, replace = TRUE) # ziehen mit zurücklegen

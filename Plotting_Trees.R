@@ -1,8 +1,3 @@
-library(ggplot2)
-############################################################
-## PLOTTING WITH GGPLOT2
-############################################################
-
   .node_id_counter <- 0
   new_node_id <- function() {
     .node_id_counter <<- .node_id_counter + 1
