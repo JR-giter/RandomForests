@@ -3,6 +3,7 @@
 # It does so by looking at the spearman correlation for numeric values or 
 # average withing group variance for factors
 # We expect: target_col = [numeric], data$ = [numeric, factor] 
+
 attribute_rating_V1 <- function(data, target_col) {
   
   target <- data[[target_col]]
@@ -60,4 +61,3 @@ attribute_rating_V1 <- function(data, target_col) {
   names(ranked_attr)
 }
 
-#attribute_rating_V1(ames, "Sale_Price")
