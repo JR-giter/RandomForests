@@ -1,10 +1,4 @@
-# This file represents a potential use case based on the <ames housing Data Set>
-
-
-#install.packages("AmesHousing")
-
-# used packages
-library(AmesHousing)
+# load libraries
 library(dplyr)
 library(tidyverse)
 library(ggplot2)
@@ -18,14 +12,18 @@ source("AlgorithmApplication.R")
 # =============================================================
 # SECTION: Loading Testing Data
 # =============================================================
+
+#install.packages("AmesHousing")
+library(AmesHousing)
 ames<- make_ames()
 
 
 # =============================================================
-# SECTION: Different tests and applications
+# SECTION: Different tests and applications based of ames
 # =============================================================
 
-# TEST 1: Cart Tree regression
+# TEST 1: Regression Tree 
+# DONE
 {
   # generating cart tree
   cart_tree <- generate_cart_tree( data_set = ames, 
@@ -42,4 +40,22 @@ ames<- make_ames()
   
   # printing + plotting results
   show_results(test_results)
+}
+
+# TEST 2: Classification Tree
+# TODO
+{
+  
+}
+
+# TEST 3: Pruning
+# TODO
+{
+  
+}
+
+# TEST 4: Bagging
+# TODO
+{
+  
 }
