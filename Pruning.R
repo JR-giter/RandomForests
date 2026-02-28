@@ -22,6 +22,9 @@ clone_tree <- function(node) {
   new$split_value_i <- node$split_value_i
   new$prediction <- node$prediction
   
+  new$X <- node$X
+  new$y <- node$y
+  
   if (!is.null(node$left_child))
     new$left_child <- clone_tree(node$left_child)
   else
@@ -164,20 +167,6 @@ select_tree_lambda <- function(sequence, lambda, y) {
 }
 
 
-# Verbose Output - Also giving the Sequence
-
-cart_prune_ccp <- function(tree, y, lambda) {
-  
-  seq <- cost_complexity_sequence(tree, y)
-  best <- select_tree_lambda(seq, lambda, y)
-  
-  list(
-    sequence = seq,
-    optimal_tree = best
-  )
-}
-
-
 # predict single tree
 
 predict_tree_single <- function(node, X, i) {
@@ -187,7 +176,7 @@ predict_tree_single <- function(node, X, i) {
   
   j <- node$split_feature_j
   s <- node$split_value_i
-  
+
   if (X[i, j] < s)
     predict_tree_single(node$left_child, X, i)
   else
@@ -197,7 +186,7 @@ predict_tree_single <- function(node, X, i) {
 predict_tree_vector <- function(tree, indices) {
   
   X <- tree$X
-  
+
   sapply(indices, function(i)
     predict_tree_single(tree, X, i))
 }
@@ -238,7 +227,7 @@ subset_loss <- function(tree, indices, mode) {
 # Main pruning algorithm
 ############################################################
 
-find_best_lambda <- function(
+prune_tree <- function(
     tree,
     lambdas,
     K = 5,
