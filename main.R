@@ -56,7 +56,7 @@ ames<- make_ames()
   # generating cart tree
   cart_tree <- generate_cart_tree( dataSet = ames, 
                                    n_properties = 20, 
-                                   n_nodes = 100, 
+                                   n_nodes = 50, 
                                    mode = "regression",
                                    target = "Sale_Price")
   # Visualizing fully grown Tree
@@ -64,10 +64,18 @@ ames<- make_ames()
   
   # Defining Set of Lambdas, and Inputvariables 
   lambdas <- seq(0, 100, length.out = 100)
-
-  # Pruning Algorithm
-  pruned_tree <- find_best_lambda(cart_tree, lambdas, K = 5)
+  rm(lambdas)
+  # Pruning Algorithm and Visualization
+  pruned_tree <- prune_tree(cart_tree, K = 5)
   plot_cart_tree(pruned_tree$optimal_tree)
+  
+  plot(pruned_tree$lambdas,
+       pruned_tree$cv_values,
+       type="l",
+       log="x",
+       xlab="lambda",
+       ylab="CV error")
+  abline(v=pruned_tree$best_lambda,col="red")
 }
 
 # TEST 4: Bagging
