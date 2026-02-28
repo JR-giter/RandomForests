@@ -70,6 +70,8 @@ generate_cart_tree <-  function(dataSet, n_properties, n_nodes, mode = "regressi
     stop("mode must be 'regression' or 'classification'")
   }
   
+  tree$X <- input_matrix
+  tree$y <- target_variable
   return(tree)
 }
 
