@@ -11,7 +11,7 @@ prepare_data <- function(dataSet, n_properties, target, filter_mode = "numeric")
   }
   
   # rating properties
-  rated_properties <-  attribute_rating_V1(dataSet, target)
+  rated_properties <-  attribute_rating(dataSet, target)
   
   if (n_properties > length(rated_properties)) {
     stop("n_properties is larger than the number of available rated properties.") 

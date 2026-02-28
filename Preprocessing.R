@@ -1,4 +1,13 @@
- attribute_rating_V1 <- function(data, target_col) {
+# =============================================================
+# Attribute rating
+# =============================================================
+
+# wrapper to call the current attribute_rating function
+attribute_rating <- function(data, target_col){
+  attribute_rating_V1(data = data, target_col = target_col)
+}
+
+attribute_rating_V1 <- function(data, target_col) {
   
   target <- data[[target_col]]
   prediction_attributes <- setdiff(names(data), target_col)
@@ -10,7 +19,7 @@
     x <- data[[prediction_attributes[i]]]
     # filter for rows where prediction attribute and target exist
     valid <- !is.na(x) & !is.na(target)
- 
+    
     x <- x[valid]
     y <- target[valid]
     
@@ -56,11 +65,11 @@
 }
 
 
- attribute_rating_V2 <- function(data, target_col) {
-   
- }
- 
- 
+attribute_rating_V2 <- function(data, target_col) {
+  
+}
+
+
 # =============================================================
 # "Best" rating to compare to
 # =============================================================
