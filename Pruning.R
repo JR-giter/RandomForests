@@ -238,7 +238,7 @@ subset_loss <- function(tree, indices, mode) {
 # Main pruning algorithm
 ############################################################
 
-find_best_lambda <- function(
+prune_tree <- function(
     tree,
     lambdas,
     K = 5,
