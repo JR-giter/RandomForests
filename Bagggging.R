@@ -16,7 +16,7 @@ bagging_greedycart <- function(data, n_bootstrapSamples, n_properties, n_nodes, 
     # generate one bootstrap sample
     boot <- bootstrap_sample(data)
     # generate model/ tree out of "boot" 
-    models[[b]] <- GreedyCart(
+    models[[b]] <- generate_cart_tree(
       dataSet = boot,
       n_properties = n_properties,
       n_nodes = n_nodes,

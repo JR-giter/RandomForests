@@ -6,9 +6,8 @@ library(ggplot2)
 # loading own scripts
 source("Preprocessing.R")
 source("Greedy_Cart.R")
-source("Plotting_Trees.R")
-source("AlgorithmApplication.R")
-source("bagging.R")
+source("Plotting.R")
+source("Bagging.R")
 source("Pruning.R")
 source("FindBestLambda.R")
 
@@ -30,11 +29,11 @@ ames<- make_ames()
 # DONE
 {
   # generating cart tree
-  cart_tree <- generate_cart_tree( data_set = ames, 
-                                   number_properties = 20, 
-                                   number_nodes = 100, 
+  cart_tree <- generate_cart_tree( dataSet = ames, 
+                                   n_properties = 20, 
+                                   n_nodes = 100, 
                                    mode = "regression",
-                                   target_variable = "Sale_Price")
+                                   target = "Sale_Price")
   
   # generating tests + results
   test_results <- test_cart( tree = cart_tree,
@@ -56,11 +55,11 @@ ames<- make_ames()
 # TODO
 {
   # generating cart tree
-  cart_tree <- generate_cart_tree( data_set = ames, 
-                                   number_properties = 20, 
-                                   number_nodes = 100, 
+  cart_tree <- generate_cart_tree( dataSet = ames, 
+                                   n_properties = 20, 
+                                   n_nodes = 100, 
                                    mode = "regression",
-                                   target_variable = "Sale_Price")
+                                   target = "Sale_Price")
   # Visualizing fully grown Tree
   plot_cart_tree(cart_tree)
   
@@ -81,7 +80,7 @@ ames<- make_ames()
   models <- bagging_greedycart( data = ames,
                                 n_bootstrapSamples = 20,
                                 n_properties = 20,
-                                n_nodes = 400, # takes the first n data points out of data
+                                n_nodes = 100, # takes the first n data points out of data
                                 target = "Sale_Price")
   
   # plotting each tree
