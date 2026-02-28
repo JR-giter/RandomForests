@@ -4,7 +4,7 @@
 # Input: Tree from Greey CART
 # Output: Firstly Sequence of Pruned Trees, then optimal Tree depending on lambda
 #
-##
+###
 is_leaf <- function(node) {
   is.null(node$left_child) && is.null(node$right_child)
 }
@@ -130,7 +130,7 @@ cost_complexity_sequence <- function(tree, y) {
   )
 }
 
-
+# Calculating the pruned Tree
 select_tree_lambda <- function(sequence, lambda, y) {
   
   best_score <- Inf
@@ -158,6 +158,7 @@ select_tree_lambda <- function(sequence, lambda, y) {
   best_tree
 }
 
+# Verbose Output - Also giving the Sequence
 cart_prune_ccp <- function(tree, y, lambda) {
 
   seq <- cost_complexity_sequence(tree, y)

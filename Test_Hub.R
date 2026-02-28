@@ -135,13 +135,15 @@ ggplot() +
 
 
 ##### Pruning
-data <- createSinDataExample(20)
+data <- createSinDataExample(50)
 input_data <- matrix(data$x, ncol=1)
 target_variable <- matrix(data$y)
 tree <- greedy_cart_regression(input_data, target_variable)
 
-lambdas <- seq(0, 50, length.out = 40)
-lambdas
+lambdas <- get_critical_lambdas(tree)
+
+lambdas <- seq(0, 1, length.out = 100)
+
 bestlam <- find_best_lambda(
   input_data,
   target_variable,
@@ -152,9 +154,7 @@ bestlam <- find_best_lambda(
 plot_cart_tree(tree)
 plot_cart_tree(bestlam$optimal_tree)
 
-result <- cart_prune_ccp(tree, target_variable, bestlam)
-pruned_tree <- result$optimal_tree
+#result <- cart_prune_ccp(tree, target_variable, lambda = 0)
+#pruned_tree <- result$optimal_tree
 
-plot_cart_tree(tree)
-plot_cart_tree(pruned_tree)
 

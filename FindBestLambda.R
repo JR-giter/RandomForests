@@ -1,11 +1,13 @@
 ###
-# Cross-Validation for Cost-Complexity Pruning (Bemerkung 6.21)
+# Cross-Validation for lambda using fully grown CART tree
+# Interface exactly:
+#   find_best_lambda(tree, lambdas, K=5, mode="regression")
 ###
 
 source("Pruning.R")
 
 ############################################################
-# Prediction
+# prediction
 ############################################################
 
 predict_tree_single <- function(node, X, i) {
@@ -22,136 +24,97 @@ predict_tree_single <- function(node, X, i) {
     predict_tree_single(node$right_child, X, i)
 }
 
-
-predict_tree_vector <- function(tree, X, indices) {
+predict_tree_vector <- function(tree, indices) {
+  
+  X <- tree$X
   
   sapply(indices, function(i)
     predict_tree_single(tree, X, i))
 }
 
 ############################################################
-# Risk restricted to subset
+# folds
 ############################################################
 
-subset_risk_regression <- function(tree, X, y, indices) {
+make_folds <- function(indices, K) {
   
-  preds <- predict_tree_vector(tree, X, indices)
+  shuffled <- sample(indices)
   
-  mean((y[indices] - preds)^2)
-}
-
-
-subset_risk_classification <- function(tree, X, y, indices) {
-  
-  preds <- predict_tree_vector(tree, X, indices)
-  
-  mean(preds != y[indices])
+  split(
+    shuffled,
+    cut(seq_along(shuffled), K, labels = FALSE)
+  )
 }
 
 ############################################################
-# Create folds
+# loss
 ############################################################
 
-make_folds <- function(n, K) {
+subset_loss <- function(tree, indices, mode) {
   
-  shuffled <- sample(1:n)
+  y <- tree$y
   
-  split(shuffled, cut(seq_along(shuffled), K, labels = FALSE))
+  preds <- predict_tree_vector(tree, indices)
+  
+  if (mode == "regression")
+    return(mean((y[indices] - preds)^2))
+  
+  if (mode == "classification")
+    return(mean(preds != y[indices]))
 }
 
 ############################################################
-# MAIN FUNCTION
+# MAIN
 ############################################################
 
 find_best_lambda <- function(
-    X,
-    y,
+    tree,
     lambdas,
     K = 5,
-    type = "regression"
+    mode = "regression"
 ) {
   
-  n <- length(y)
+  if (is.null(tree$X) || is.null(tree$y))
+    stop("Tree must contain tree$X and tree$y")
   
-  folds <- make_folds(n, K)
+  y <- tree$y
+  
+  ##########################################################
+  # pruning sequence once
+  ##########################################################
+  
+  seq <- cost_complexity_sequence(tree, y)
+  
+  folds <- make_folds(tree$indices, K)
   
   cv_values <- rep(0, length(lambdas))
   
   ##########################################################
-  # Cross-validation loop
+  # CV loop
   ##########################################################
   
   for (m in seq_along(folds)) {
     
     val_idx <- folds[[m]]
     
-    train_idx <- setdiff(1:n, val_idx)
-    
-    ######################################################
-    # grow full tree using YOUR CART
-    ######################################################
-    
-    if (type == "regression") {
-      
-      full_tree <- greedy_cart_regression(
-        X[train_idx, , drop = FALSE],
-        y[train_idx]
-      )
-      
-    } else {
-      
-      full_tree <- greedy_cart_classification(
-        X[train_idx, , drop = FALSE],
-        y[train_idx]
-      )
-      
-    }
-    
-    ######################################################
-    # pruning sequence
-    ######################################################
-    
-    seq <- cost_complexity_sequence(full_tree, y[train_idx])
-    
-    ######################################################
-    # evaluate lambdas
-    ######################################################
-    
     for (l in seq_along(lambdas)) {
-      
-      lambda <- lambdas[l]
       
       pruned_tree <- select_tree_lambda(
         seq,
-        lambda,
-        y[train_idx]
+        lambdas[l],
+        y
       )
       
-      if (type == "regression") {
-        
-        loss <- subset_risk_regression(
-          pruned_tree,
-          X,
-          y,
-          val_idx
-        )
-        
-      } else {
-        
-        loss <- subset_risk_classification(
-          pruned_tree,
-          X,
-          y,
-          val_idx
-        )
-      }
+      loss <- subset_loss(
+        pruned_tree,
+        val_idx,
+        mode
+      )
       
       cv_values[l] <- cv_values[l] + loss
     }
   }
   
-  ##########################################################
-  # average CV error
   ##########################################################
   
   cv_values <- cv_values / K
@@ -160,33 +123,17 @@ find_best_lambda <- function(
   
   best_lambda <- lambdas[best_index]
   
-  ##########################################################
-  # final tree on full dataset
-  ##########################################################
-  
-  if (type == "regression") {
-    
-    full_tree <- greedy_cart_regression(X, y)
-    
-  } else {
-    
-    full_tree <- greedy_cart_classification(X, y)
-  }
-  
-  final_seq <- cost_complexity_sequence(full_tree, y)
-  
   optimal_tree <- select_tree_lambda(
-    final_seq,
+    seq,
     best_lambda,
     y
   )
-  
-  ##########################################################
   
   list(
     best_lambda = best_lambda,
     cv_values = cv_values,
     lambdas = lambdas,
-    optimal_tree = optimal_tree
+    optimal_tree = optimal_tree,
+    sequence = seq
   )
 }

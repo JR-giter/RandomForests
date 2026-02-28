@@ -9,6 +9,9 @@ source("Greedy_Cart.R")
 source("Plotting_Trees.R")
 source("AlgorithmApplication.R")
 source("bagging.R")
+source("Pruning.R")
+source("FindBestLambda.R")
+
 
 # =============================================================
 # SECTION: Loading Testing Data
@@ -52,7 +55,23 @@ ames<- make_ames()
 # TEST 3: Pruning
 # TODO
 {
+  # generating cart tree
+  cart_tree <- generate_cart_tree( data_set = ames, 
+                                   number_properties = 20, 
+                                   number_nodes = 100, 
+                                   mode = "regression",
+                                   target_variable = "Sale_Price")
+  # Visualizing fully grown Tree
+  plot_cart_tree(cart_tree)
   
+  # Defining Set of Lambdas, and Inputvariables 
+  lambdas <- seq(0, 1, length.out = 100)
+  cart_tree$X <- cart_tree$properties
+  cart_tree$Y <- "Sale_Price"
+  
+  # Pruning Algorithm
+  pruned_tree <- find_best_lambda(cart_tree, lambdas, K = 5)
+  plot_cart_tree(pruned_tree)
 }
 
 # TEST 4: Bagging
