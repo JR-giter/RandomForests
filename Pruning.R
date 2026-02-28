@@ -167,20 +167,6 @@ select_tree_lambda <- function(sequence, lambda, y) {
 }
 
 
-# Verbose Output - Also giving the Sequence
-
-cart_prune_ccp <- function(tree, y, lambda) {
-  
-  seq <- cost_complexity_sequence(tree, y)
-  best <- select_tree_lambda(seq, lambda, y)
-  
-  list(
-    sequence = seq,
-    optimal_tree = best
-  )
-}
-
-
 # predict single tree
 
 predict_tree_single <- function(node, X, i) {
@@ -241,7 +227,7 @@ subset_loss <- function(tree, indices, mode) {
 # Main pruning algorithm
 ############################################################
 
-find_best_lambda <- function(
+prune_tree <- function(
     tree,
     lambdas,
     K = 5,
