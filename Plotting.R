@@ -1,4 +1,39 @@
-  .node_id_counter <- 0
+# visualizing results
+show_results <- function(test_results){
+  # comparing test results to actual results 
+  print(test_results)
+  
+  print(
+    c(
+      max = max(test_results$delta, na.rm = TRUE),
+      mean = mean(test_results$delta, na.rm = TRUE),
+      median = median(test_results$delta, na.rm = TRUE)
+    )
+  )
+  
+  # plotting results
+  
+  hist(test_results$delta,
+       breaks = 40,
+       main = "Distribution of Percentage Delta",
+       xlab = "Delta (%)",
+       col = "steelblue",
+       border = "white")
+  
+  plot(density(test_results$delta),
+       main = "Density of Percentage Delta",
+       xlab = "Delta (%)",
+       lwd = 2)
+}
+
+
+# =============================================================
+# Plotting Trees
+# =============================================================
+
+
+  
+.node_id_counter <- 0
   new_node_id <- function() {
     .node_id_counter <<- .node_id_counter + 1
     paste0("node_", .node_id_counter)
@@ -103,4 +138,5 @@
       scale_y_continuous(expand = expansion(mult = 0.2))
   }
 
+  
   

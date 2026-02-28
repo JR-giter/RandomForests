@@ -28,4 +28,37 @@ bagging_greedycart <- function(data, n_bootstrapSamples, n_properties, n_nodes, 
   models
 }
 
+# =============================================================
+# Tests
+# =============================================================
 
+# testing bagging_trees
+test_bagging <- function(models, dataPoints, mode = "regression", target) {
+  # Extract features used by the first tree
+  X <- as.matrix(dataPoints[, models[[1]]$properties, drop = FALSE])
+  
+  # Get actual target
+  y <- dataPoints[[target]]
+  
+  # Initialize matrix to store predictions
+  pred_matrix <- matrix(NA, nrow = nrow(X), ncol = length(models))
+  
+  # Loop over each model
+  for (i in seq_along(models)) {
+    tree <- models[[i]]
+    pred_matrix[, i] <- apply(X, 1, function(row) predict_cart(tree, row))
+  }
+  
+  # Bagged predictions (average for regression)
+  bagged_preds <- rowMeans(pred_matrix)
+  
+  # Create result data frame
+  result <- data.frame(actual = y, prediction = bagged_preds)
+  
+  # Calculate delta for regression
+  if (mode == "regression") {
+    result$delta <- abs(y - bagged_preds) / y * 100
+  }
+  
+  return(result)
+}
