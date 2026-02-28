@@ -1,6 +1,7 @@
 source("Greedy_Cart.R", echo = TRUE, print.eval = TRUE)
 source("Plotting_Trees.R")
 source("Pruning.R", echo = TRUE, print.eval = TRUE)
+source("FindBestLambda.R")
 ############################################################
 ## EXAMPLE DATA FOR REGRESSION
 ############################################################
@@ -139,7 +140,19 @@ input_data <- matrix(data$x, ncol=1)
 target_variable <- matrix(data$y)
 tree <- greedy_cart_regression(input_data, target_variable)
 
-result <- cart_prune_ccp(tree, target_variable, lambda = 0.01)
+lambdas <- seq(0, 50, length.out = 40)
+lambdas
+bestlam <- find_best_lambda(
+  input_data,
+  target_variable,
+  lambdas,
+  K = 5,
+  type = "regression"
+)
+plot_cart_tree(tree)
+plot_cart_tree(bestlam$optimal_tree)
+
+result <- cart_prune_ccp(tree, target_variable, bestlam)
 pruned_tree <- result$optimal_tree
 
 plot_cart_tree(tree)
