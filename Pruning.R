@@ -1,9 +1,7 @@
-
 ############################################################
-### helper functions
+# helper
 ############################################################
 
-# Tree functions
 is_leaf <- function(node) {
   is.null(node$left_child) && is.null(node$right_child)
 }
@@ -14,6 +12,9 @@ num_leaves <- function(node) {
 }
 
 clone_tree <- function(node) {
+  
+  if (is.null(node)) return(NULL)
+  
   new <- new.env(parent = emptyenv())
   
   new$id <- node$id
@@ -21,278 +22,317 @@ clone_tree <- function(node) {
   new$split_feature_j <- node$split_feature_j
   new$split_value_i <- node$split_value_i
   new$prediction <- node$prediction
-  
   new$X <- node$X
   new$y <- node$y
   
-  if (!is.null(node$left_child))
-    new$left_child <- clone_tree(node$left_child)
-  else
-    new$left_child <- NULL
-  
-  if (!is.null(node$right_child))
-    new$right_child <- clone_tree(node$right_child)
-  else
-    new$right_child <- NULL
+  new$left_child <- clone_tree(node$left_child)
+  new$right_child <- clone_tree(node$right_child)
   
   new
 }
 
-
-# Risk functions
+############################################################
+# risk
+############################################################
 
 node_risk <- function(node, y) {
   
   idx <- node$indices
   
-  if (length(idx) == 0)
-    return(0)
+  if (length(idx)==0) return(0)
   
   pred <- mean(y[idx])
   
-  sum((y[idx] - pred)^2)
+  sum((y[idx]-pred)^2)
 }
 
 subtree_risk <- function(node, y) {
   
-  if (is.null(node$left_child))
-    return(node_risk(node, y))
+  if (is_leaf(node))
+    return(node_risk(node,y))
   
-  subtree_risk(node$left_child, y) +
-    subtree_risk(node$right_child, y)
+  subtree_risk(node$left_child,y) +
+    subtree_risk(node$right_child,y)
 }
 
-
-# Compute weakest link
+############################################################
+# weakest link g(t)
+############################################################
 
 compute_g <- function(node, y, result=list()) {
   
   if (is_leaf(node))
     return(result)
   
-  Rt <- node_risk(node, y)
-  RTt <- subtree_risk(node, y)
+  Rt  <- node_risk(node,y)
+  RTt <- subtree_risk(node,y)
   leaves <- num_leaves(node)
   
-  g <- (Rt - RTt) / (leaves - 1)
+  g <- (Rt-RTt)/(leaves-1)
   
   result[[length(result)+1]] <- list(
     node=node,
     g=g
   )
   
-  result <- compute_g(node$left_child, y, result)
-  result <- compute_g(node$right_child, y, result)
+  result <- compute_g(node$left_child,y,result)
+  result <- compute_g(node$right_child,y,result)
   
   result
 }
 
-
-# Prune single node
+############################################################
+# prune
+############################################################
 
 prune_node <- function(node) {
   
-  if (is.null(node$id) || length(node$id)==0)
-    node$id <- new_node_id()
-  
-  node$left_child <- NULL
+  node$left_child  <- NULL
   node$right_child <- NULL
   
   node$split_feature_j <- NULL
-  node$split_value_i <- NULL
+  node$split_value_i   <- NULL
 }
 
+############################################################
+# sequence T0 ... TP
+############################################################
 
-# Generate cost-complexity-sequence
-
-cost_complexity_sequence <- function(tree, y) {
+cost_complexity_sequence <- function(tree,y) {
   
-  seq <- list()
+  trees  <- list()
   alphas <- c()
   
   current <- clone_tree(tree)
-  seq[[1]] <- clone_tree(current)
+  
+  trees[[1]] <- clone_tree(current)
   
   repeat {
     
-    g_list <- compute_g(current, y)
+    g_list <- compute_g(current,y)
     
-    if (length(g_list) == 0)
+    if (length(g_list)==0)
       break
     
-    g_values <- sapply(g_list, function(x) x$g)
-    min_index <- which.min(g_values)
+    g_vals <- sapply(g_list,function(x)x$g)
     
-    alpha <- g_values[min_index]
-    node_to_prune <- g_list[[min_index]]$node
+    k <- which.min(g_vals)
     
-    prune_node(node_to_prune)
+    alpha <- g_vals[k]
     
-    seq[[length(seq)+1]] <- clone_tree(current)
-    alphas <- c(alphas, alpha)
+    prune_node(g_list[[k]]$node)
+    
+    trees[[length(trees)+1]] <- clone_tree(current)
+    alphas <- c(alphas,alpha)
     
     if (is_leaf(current))
       break
   }
   
   list(
-    trees = seq,
-    alphas = alphas
+    trees=trees,
+    alphas=alphas
   )
 }
 
+############################################################
+# select tree for lambda
+############################################################
 
-# Calculating the pruned tree
-
-select_tree_lambda <- function(sequence, lambda, y) {
+select_tree_lambda <- function(seq,lambda,y){
   
+  best <- seq$trees[[1]]
   best_score <- Inf
-  best_tree <- NULL
   
-  for (i in seq_along(sequence$trees)) {
+  for(tree in seq$trees){
     
-    tree <- sequence$trees[[i]]
-    
-    R <- subtree_risk(tree, y)
+    R <- subtree_risk(tree,y)
     size <- num_leaves(tree)
     
-    score <- R + lambda * size
+    score <- R + lambda*size
     
-    if (score < best_score) {
+    if(score<best_score){
       best_score <- score
-      best_tree <- tree
+      best <- tree
     }
   }
-  best_tree
+  
+  best
 }
 
+############################################################
+# prediction
+############################################################
 
-# predict single tree
-
-predict_tree_single <- function(node, X, i) {
+predict_single <- function(node,x){
   
-  if (is.null(node$split_feature_j))
+  if(is.null(node$split_feature_j))
     return(node$prediction)
   
   j <- node$split_feature_j
   s <- node$split_value_i
-
-  if (X[i, j] < s)
-    predict_tree_single(node$left_child, X, i)
+  
+  if(x[j] < s)
+    predict_single(node$left_child,x)
   else
-    predict_tree_single(node$right_child, X, i)
+    predict_single(node$right_child,x)
 }
 
-predict_tree_vector <- function(tree, indices) {
+predict_tree <- function(tree,X,indices){
   
-  X <- tree$X
-
-  sapply(indices, function(i)
-    predict_tree_single(tree, X, i))
-}
-
-
-# generate folds
-
-make_folds <- function(indices, K) {
-  
-  shuffled <- sample(indices)
-  
-  split(
-    shuffled,
-    cut(seq_along(shuffled), K, labels = FALSE)
+  sapply(indices,function(i)
+    predict_single(tree,X[i,])
   )
 }
 
+############################################################
+# folds
+############################################################
 
-# calculate subset loss
-
-subset_loss <- function(tree, indices, mode) {
+make_folds <- function(n,K){
   
-  y <- tree$y
+  idx <- sample(1:n)
   
-  preds <- predict_tree_vector(tree, indices)
-  
-  if (mode == "regression")
-    return(mean((y[indices] - preds)^2))
-  
-  if (mode == "classification")
-    return(mean(preds != y[indices]))
+  split(idx,cut(seq_along(idx),K,labels=FALSE))
 }
 
-
-
+############################################################
+# MAIN FUNCTION
+#
+# build_tree must be your original CART growing function
+############################################################
 
 ############################################################
-# Main pruning algorithm
+# CORRECT CART COST-COMPLEXITY PRUNING WITH K-FOLD CV
+# works directly with your cart_tree object
 ############################################################
 
-prune_tree <- function(
-    tree,
-    lambdas,
-    K = 5,
-    mode = "regression"
-) {
-  
-  if (is.null(tree$X) || is.null(tree$y))
-    stop("Tree must contain tree$X and tree$y")
-  
+prune_tree <- function(tree, lambdas = NULL, K = 5, mode="regression")
+{
+  X <- tree$X
   y <- tree$y
+  n <- length(y)
   
+  ##########################################################
+  # helper: rebuild tree using your greedy CART
+  ##########################################################
   
-  # pruning sequence once
-  
-  seq <- cost_complexity_sequence(tree, y)
-  
-  folds <- make_folds(tree$indices, K)
-  
-  cv_values <- rep(0, length(lambdas))
-  
-  
-  # CV loop
-  
-  for (m in seq_along(folds)) {
+  build_tree_from_indices <- function(indices)
+  {
+    Xsub <- X[indices,,drop=FALSE]
+    ysub <- y[indices]
     
-    val_idx <- folds[[m]]
+    new_tree <- greedy_cart_regression(Xsub, ysub)
     
-    for (l in seq_along(lambdas)) {
+    new_tree$X <- Xsub
+    new_tree$y <- ysub
+    
+    new_tree
+  }
+  
+  ##########################################################
+  # prediction independent of stored X
+  ##########################################################
+  
+  predict_single <- function(node, x)
+  {
+    if (is.null(node$split_feature_j))
+      return(node$prediction)
+    
+    j <- node$split_feature_j
+    s <- node$split_value_i
+    
+    if (x[j] < s)
+      predict_single(node$left_child, x)
+    else
+      predict_single(node$right_child, x)
+  }
+  
+  predict_tree <- function(tree, Xdata, indices)
+  {
+    sapply(indices, function(i)
+      predict_single(tree, Xdata[i,]))
+  }
+  
+  ##########################################################
+  # make folds
+  ##########################################################
+  
+  shuffled <- sample(1:n)
+  folds <- split(shuffled, cut(seq_along(shuffled), K, labels=FALSE))
+  
+  ##########################################################
+  # collect lambdas automatically if not supplied
+  ##########################################################
+  
+  if (is.null(lambdas))
+  {
+    full_seq <- cost_complexity_sequence(tree, y)
+    lambdas <- unique(full_seq$alphas)
+  }
+  
+  cv_error <- rep(0, length(lambdas))
+  
+  ##########################################################
+  # CROSS VALIDATION LOOP (correct according to CART theory)
+  ##########################################################
+  
+  for (k in seq_along(folds))
+  {
+    val_idx <- folds[[k]]
+    train_idx <- setdiff(1:n, val_idx)
+    
+    train_tree <- build_tree_from_indices(train_idx)
+    
+    seq <- cost_complexity_sequence(train_tree, train_tree$y)
+    
+    for (i in seq_along(lambdas))
+    {
+      lambda <- lambdas[i]
       
-      pruned_tree <- select_tree_lambda(
-        seq,
-        lambdas[l],
-        y
-      )
+      pruned <- select_tree_lambda(seq, lambda, train_tree$y)
       
-      loss <- subset_loss(
-        pruned_tree,
-        val_idx,
-        mode
-      )
+      preds <- predict_tree(pruned, X, val_idx)
       
-      cv_values[l] <- cv_values[l] + loss
+      if (mode=="regression")
+        err <- mean((y[val_idx] - preds)^2)
+      else
+        err <- mean(y[val_idx] != preds)
+      
+      cv_error[i] <- cv_error[i] + err
     }
   }
   
+  cv_error <- cv_error / K
   
-  cv_values <- cv_values / K
+  ##########################################################
+  # best lambda
+  ##########################################################
   
-  best_index <- which.min(cv_values)
-  
+  best_index <- which.min(cv_error)
   best_lambda <- lambdas[best_index]
   
+  ##########################################################
+  # prune full tree using best lambda
+  ##########################################################
+  
+  full_seq <- cost_complexity_sequence(tree, y)
+  
   optimal_tree <- select_tree_lambda(
-    seq,
+    full_seq,
     best_lambda,
     y
   )
   
-  # output
+  ##########################################################
+  # return same structure as your original function
+  ##########################################################
   
   list(
-    best_lambda = best_lambda,
-    cv_values = cv_values,
-    lambdas = lambdas,
     optimal_tree = optimal_tree,
-    sequence = seq
+    best_lambda = best_lambda,
+    cv_values = cv_error,
+    lambdas = lambdas,
+    sequence = full_seq
   )
 }
