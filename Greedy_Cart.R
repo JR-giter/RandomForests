@@ -4,14 +4,14 @@
 # =============================================================
 
 # prepares data before using
-prepare_data <- function(dataSet, n_properties, target_property, filter_mode = "numeric"){
+prepare_data <- function(dataSet, n_properties, target, filter_mode = "numeric"){
   # filters out non-numeric properties if "filter_mode" -> numeric
   if(filter_mode == "numeric"){
     dataSet <- dataSet[, sapply(dataSet, is.numeric), drop = FALSE]
   }
   
   # rating properties
-  rated_properties <-  attribute_rating_V1(dataSet, target_property)
+  rated_properties <-  attribute_rating_V1(dataSet, target)
   
   if (n_properties > length(rated_properties)) {
     stop("n_properties is larger than the number of available rated properties.") 
@@ -23,8 +23,6 @@ prepare_data <- function(dataSet, n_properties, target_property, filter_mode = "
   # cutting out unnecessary properties
   props <- unlist(properties, use.names = FALSE)
   
-  # Ensure target property is always included
-  props <- unique(c(target_property, props))
   
   missing <- setdiff(props, names(dataSet))
   
@@ -40,7 +38,7 @@ prepare_data <- function(dataSet, n_properties, target_property, filter_mode = "
 }
 
 # generating a greedy Cart Tree
-generate_cart_tree <-  function(dataSet, n_properties, n_nodes, mode = "regression", target = "Sale_Price"){
+generate_cart_tree <-  function(dataSet, n_properties, n_nodes, mode = "regression", target){
   
   # get the Data-set as DataFrame
   dataSet <- as.data.frame(dataSet)
@@ -51,7 +49,7 @@ generate_cart_tree <-  function(dataSet, n_properties, n_nodes, mode = "regressi
   # reducing data based on n_properties (*non-numeric)
   prep <- prepare_data(dataSet = dataSub, 
                        n_properties = n_properties, 
-                       target_property = target)
+                       target = target)
   # selecting data
   reduced_data <- prep$data
   
@@ -95,7 +93,7 @@ predict_cart <- function(tree, dataPoint) {
 }
 
 # testing  a cart tree on a number of input dataPoints 
-test_cart <- function(tree, dataPoints, mode = "regression", target = "Sale_Price") {
+test_cart <- function(tree, dataPoints, mode = "regression", target) {
   
   # filtering out only necessary properties
   X <- as.matrix(dataPoints[, tree$properties, drop = FALSE])
