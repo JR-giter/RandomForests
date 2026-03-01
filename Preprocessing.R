@@ -4,7 +4,7 @@
 
 # wrapper to call the current attribute_rating function
 attribute_rating <- function(data, target_col){
-  attribute_rating_V1(data = data, target_col = target_col)
+  attribute_rating_V3(data = data, target_col = target_col)
 }
 
 attribute_rating_V1 <- function(data, target_col) {
@@ -114,3 +114,4 @@ compare_rankings <- function(ranking_func1, ranking_func2, data, target_col, mod
 }
 
 compare_rankings(attribute_rating_V1, attribute_rating_V3, ames, "Sale_Price")
+
