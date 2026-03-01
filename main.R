@@ -29,7 +29,7 @@ ames<- make_ames()
 {
   # generating cart tree
   cart_tree <- generate_cart_tree( dataSet = ames, 
-                                   n_properties = 5, 
+                                   properties = 5, 
                                    n_nodes = 600, 
                                    mode = "regression",
                                    target = "Sale_Price")
@@ -55,7 +55,7 @@ ames<- make_ames()
 {
   # generating cart tree
   cart_tree <- generate_cart_tree( dataSet = ames, 
-                                   n_properties = 20, 
+                                   properties = 20, 
                                    n_nodes = 50, 
                                    mode = "regression",
                                    target = "Sale_Price")
@@ -84,7 +84,7 @@ ames<- make_ames()
   # generating bagging models
   models <- bagging_greedycart( data = ames,
                                 n_bootstrapSamples = 20,
-                                n_properties = 20,
+                                properties = 20,
                                 n_nodes = 100, # takes the first n data points out of data
                                 target = "Sale_Price")
   
@@ -136,3 +136,43 @@ ames<- make_ames()
   print(results)
 }
 
+
+
+
+
+
+
+
+
+
+#Testing Tests (Nils)
+
+
+cart_tree1 <- generate_cart_tree( dataSet = ames, 
+                                 properties = 10, 
+                                 n_nodes = 10, 
+                                 mode = "regression",
+                                 target = "Sale_Price")
+# Visualizing fully grown Tree
+plot_cart_tree(cart_tree1)
+cart_tree1$properties
+
+
+cart_tree2 <- generate_cart_tree( dataSet = ames, 
+                                  properties = c(2, 34, 23, 5, 7), 
+                                  n_nodes = 10, 
+                                  mode = "regression",
+                                  target = "Sale_Price")
+# Visualizing fully grown Tree
+plot_cart_tree(cart_tree2)
+cart_tree2$properties
+
+
+cart_tree3 <- generate_cart_tree( dataSet = ames, 
+                                  properties = c("Lot_Area", "Garage_Area"), 
+                                  n_nodes = 10, 
+                                  mode = "regression",
+                                  target = "Sale_Price")
+# Visualizing fully grown Tree
+plot_cart_tree(cart_tree3)
+cart_tree3$properties

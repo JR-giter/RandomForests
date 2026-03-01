@@ -6,7 +6,7 @@ bootstrap_sample <- function(dataSet) {
 }
 
 # generating "n_bootstrapSamples" out of the first 
-bagging_greedycart <- function(data, n_bootstrapSamples, n_properties, n_nodes, target) {
+bagging_greedycart <- function(data, n_bootstrapSamples, properties, n_nodes, target) {
   
   # empty list to store each tree
   models <- vector("list", n_bootstrapSamples)
@@ -18,7 +18,7 @@ bagging_greedycart <- function(data, n_bootstrapSamples, n_properties, n_nodes, 
     # generate model/ tree out of "boot" 
     models[[b]] <- generate_cart_tree(
       dataSet = boot,
-      n_properties = n_properties,
+      properties = properties,
       n_nodes = n_nodes,
       mode = "regression",
       target = target

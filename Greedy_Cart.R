@@ -4,41 +4,58 @@
 # =============================================================
 
 # prepares data before using
-prepare_data <- function(dataSet, n_properties, target, filter_mode = "numeric"){
+prepare_data <- function(dataSet, properties, target, filter_mode = "numeric"){
   # filters out non-numeric properties if "filter_mode" -> numeric
   if(filter_mode == "numeric"){
     dataSet <- dataSet[, sapply(dataSet, is.numeric), drop = FALSE]
   }
   
-  # rating properties
-  rated_properties <-  attribute_rating(dataSet, target)
-  
-  if (n_properties > length(rated_properties)) {
-    stop("n_properties is larger than the number of available rated properties.") 
+  # Determine selected properties based on input type
+  if (is.numeric(properties) && length(properties) == 1) {
+    
+    # Case A: single number → top-n rated properties
+    rated_properties <- attribute_rating(dataSet, target)
+    
+    if (properties > length(rated_properties)) {
+      stop("Requested number of properties exceeds available rated properties.")
+    }
+    
+    props <- rated_properties[1:properties]
+    
+    # Case B: integer vector → treat as column indices
+  } else if (is.numeric(properties)) {
+    if (any(properties < 1 | properties > ncol(dataSet))) {
+      stop("Some indices in 'properties' are out of bounds.")
+    }
+    props <- names(dataSet)[properties]
+    
+    # Case C: character vector → treat as column names
+  } else if (is.character(properties)) {
+    missing <- setdiff(properties, names(dataSet))
+    if (length(missing) > 0) {
+      stop(paste("These properties do not exist in the dataset:", 
+                 paste(missing, collapse = ", ")))
+    }
+    props <- properties
+    
+  } else {
+    stop("Argument 'properties' must be either: numeric scalar, numeric vector, or character vector.")
   }
   
-  # selecting top "n_properties"
-  properties <- list(rated_properties[1:n_properties])
+  # Ensure target is NOT included
+  props <- setdiff(props, target)
   
-  # cutting out unnecessary properties
-  props <- unlist(properties, use.names = FALSE)
-  
-  
-  missing <- setdiff(props, names(dataSet))
-  
-  if (length(missing) > 0) {
-    stop('Propertie does not exist in DataSet')
-  }
-  
-  # returning data as well as selected properties
+  # Return reduced dataset
   return(list(
     data = dataSet[, props, drop = FALSE],
     properties = props
   ))
 }
 
+
+
 # generating a greedy Cart Tree
-generate_cart_tree <-  function(dataSet, n_properties, n_nodes, mode = "regression", target){
+generate_cart_tree <-  function(dataSet, properties, n_nodes, mode = "regression", target){
   
   # get the Data-set as DataFrame
   dataSet <- as.data.frame(dataSet)
@@ -48,7 +65,7 @@ generate_cart_tree <-  function(dataSet, n_properties, n_nodes, mode = "regressi
   
   # reducing data based on n_properties (*non-numeric)
   prep <- prepare_data(dataSet = dataSub, 
-                       n_properties = n_properties, 
+                       properties = properties, 
                        target = target)
   # selecting data
   reduced_data <- prep$data
