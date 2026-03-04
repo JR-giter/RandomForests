@@ -4,11 +4,7 @@ source("Plotting_Trees.R")
 source("Test_Hub.R")
 source("AlgorithmApplication.R")
 
-
-
-
 # Code for UI
-
 ui <- page_sidebar(
   title = "Greedy CART Regression",
   
@@ -42,13 +38,8 @@ server <- function(input, output, session) {
                        n_nodes = input$n,
                        mode = "regression",
                        target = "Sale_Price")
-    
-    
     # plott tree
     plot_cart_tree(tree)
   })
 }
-
-
-
 shinyApp(ui, server)

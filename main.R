@@ -114,14 +114,15 @@ ames<- make_ames()
   target_var <- "Sale_Price"
   
   # 3. Train the Random Forest
-  my_rf <- random_forest(
-    data = train_data, 
-    B = B_trees, 
-    m = m_features, 
-    target = target_var, 
-    mode = "regression"
-  )
-  
+  system.time({
+    my_rf <- random_forest(
+      data = train_data, 
+      B = B_trees, 
+      m = m_features, 
+      target = target_var, 
+      mode = "regression"
+    )
+  })  
   # 4. Predict
   predictions <- predict_rf(my_rf, test_data)
   
@@ -130,10 +131,10 @@ ames<- make_ames()
     Actual = test_data$Sale_Price,
     Predicted = predictions,
     Error = abs(test_data$Sale_Price - predictions),
-    ProError  = (abs(test_data$Sale_Price - predictions) / test_data$Sale_Price) * 100
+    delta  = (abs(test_data$Sale_Price - predictions) / test_data$Sale_Price) * 100
   )
   
-  print(results)
+  show_results(results)
 }
 
 
