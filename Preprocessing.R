@@ -4,7 +4,7 @@
 
 # wrapper to call the current attribute_rating function
 attribute_rating <- function(data, target_col){
-  attribute_rating_V3(data = data, target_col = target_col)
+  attribute_rating_V1(data = data, target_col = target_col)
 }
 
 attribute_rating_V1 <- function(data, target_col) {
@@ -73,7 +73,6 @@ attribute_rating_V2 <- function(data, target_col) {
 # =============================================================
 # "Best" rating to compare to
 # =============================================================
-
 library(FSelectorRcpp)
 
 attribute_rating_V3 <- function(data, target_col) {

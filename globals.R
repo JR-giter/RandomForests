@@ -1,3 +1,6 @@
 library(shiny)
 library(ggplot2)
 library(bslib)
+library(tidyverse)
+library(AmesHousing)
+ames <- make_ames()

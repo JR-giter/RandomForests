@@ -36,14 +36,14 @@ ames<- make_ames()
   
   # generating tests + results
   test_results <- test_cart( tree = cart_tree,
-                             dataPoints = ames[720:730,], 
+                             dataPoints = ames[2900:2930,], 
                              mode = "regression",
                              target = "Sale_Price")
   
   # printing + plotting results
   show_results(test_results)
 }
-
+nrow(ames)
 # TEST 2: Classification Tree
 # TODO
 {
@@ -62,9 +62,6 @@ ames<- make_ames()
   # Visualizing fully grown Tree
   plot_cart_tree(cart_tree)
   
-  # Defining Set of Lambdas, and Inputvariables 
-  lambdas <- seq(0, 100, length.out = 100)
-  rm(lambdas)
   # Pruning Algorithm and Visualization
   pruned_tree <- prune_tree(cart_tree, K = 5)
   plot_cart_tree(pruned_tree$optimal_tree)
@@ -107,22 +104,21 @@ ames<- make_ames()
 {
   # 1. Load data
   train_data <- ames[1:100, ]
-  test_data  <- ames[110:120, ]
+  test_data  <- ames[2900:2930, ]
   # 2. Parameters
   B_trees <- 50        
   m_features <- 8      # ncol(ames) = 81, 81-1 -> \sqrt(80) = 8
   target_var <- "Sale_Price"
   
   # 3. Train the Random Forest
-  system.time({
-    my_rf <- random_forest(
-      data = train_data, 
-      B = B_trees, 
-      m = m_features, 
-      target = target_var, 
-      mode = "regression"
-    )
-  })  
+  my_rf <- random_forest(
+    data = train_data, 
+    B = B_trees, 
+    m = m_features, 
+    target = target_var, 
+    mode = "regression"
+  )
+    
   # 4. Predict
   predictions <- predict_rf(my_rf, test_data)
   
