@@ -5,10 +5,13 @@
 
 # prepares data before using
 prepare_data <- function(dataSet, properties, target, filter_mode = "numeric"){
+  
   # filters out non-numeric properties if "filter_mode" -> numeric
-  if(filter_mode == "numeric"){
-    dataSet <- dataSet[, sapply(dataSet, is.numeric), drop = FALSE]
+  if (filter_mode == "numeric") {
+    keep_cols <- sapply(dataSet, is.numeric)
+    dataSet <- dataSet[, keep_cols, drop = FALSE]
   }
+  
   
   # Determine selected properties based on input type
   if (is.numeric(properties) && length(properties) == 1) {
@@ -42,8 +45,6 @@ prepare_data <- function(dataSet, properties, target, filter_mode = "numeric"){
     stop("Argument 'properties' must be either: numeric scalar, numeric vector, or character vector.")
   }
   
-  # Ensure target is NOT included
-  props <- setdiff(props, target)
   
   # Return reduced dataset
   return(list(
@@ -55,7 +56,7 @@ prepare_data <- function(dataSet, properties, target, filter_mode = "numeric"){
 
 
 # generating a greedy Cart Tree
-generate_cart_tree <-  function(dataSet, properties, n_nodes, mode = "regression", target){
+generate_cart_tree <-  function(dataSet, properties, n_nodes, mode, target){
   
   # get the Data-set as DataFrame
   dataSet <- as.data.frame(dataSet)
@@ -66,7 +67,8 @@ generate_cart_tree <-  function(dataSet, properties, n_nodes, mode = "regression
   # reducing data based on n_properties (*non-numeric)
   prep <- prepare_data(dataSet = dataSub, 
                        properties = properties, 
-                       target = target)
+                       target = target,
+                       filter_mode = "numeric")
   # selecting data
   reduced_data <- prep$data
   
@@ -81,6 +83,7 @@ generate_cart_tree <-  function(dataSet, properties, n_nodes, mode = "regression
     tree$properties <- prep$properties
   }else if(mode == "classification") {
     tree <- greedy_cart_classification(input_matrix, target_variable)
+    tree$properties <- prep$properties
   } else {
     stop("mode must be 'regression' or 'classification'")
   }
@@ -128,6 +131,14 @@ test_cart <- function(tree, dataPoints, mode = "regression", target) {
   # calculating delta for regression
   if (mode == "regression"){
     result$delta <- abs(y - preds) / y * 100
+  }
+  if (mode == "classification"){
+    result$correct <- result$actual == result$prediction
+    accuracy <- mean(result$correct)
+    confusion <- table(result$actual, result$prediction)
+    
+    attr(result, "accuracy") <- accuracy
+    attr(result, "confusion_matrix") <- confusion
   }
   
   return(result)
