@@ -1,16 +1,9 @@
 # visualizing results
 show_results <- function(test_results){
   # comparing test results to actual results 
-  print(test_results)
+  # print(test_results)
   
-  print(
-    c(
-      max = max(test_results$delta, na.rm = TRUE),
-      min = min (test_resulsts$delta, na.rm = TRUE),
-      mean = mean(test_results$delta, na.rm = TRUE),
-      median = median(test_results$delta, na.rm = TRUE)
-    )
-  )
+  print(calc_results(test_results))
   
   # plotting results
   
@@ -31,6 +24,7 @@ calc_results <- function(test_results){
   return(
     c(
       max = max(test_results$delta, na.rm = TRUE),
+      min = min (test_resulsts$delta, na.rm = TRUE),
       mean = mean(test_results$delta, na.rm = TRUE),
       median = median(test_results$delta, na.rm = TRUE)
     )
