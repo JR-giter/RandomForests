@@ -26,6 +26,15 @@ show_results <- function(test_results){
        lwd = 2)
 }
 
+calc_results <- function(test_results){
+  return(
+    c(
+      max = max(test_results$delta, na.rm = TRUE),
+      mean = mean(test_results$delta, na.rm = TRUE),
+      median = median(test_results$delta, na.rm = TRUE)
+    )
+  )
+}
 
 # =============================================================
 # Plotting Trees
