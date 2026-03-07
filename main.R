@@ -42,13 +42,66 @@ ames<- make_ames()
   
   # printing + plotting results
   show_results(test_results)
+  
 }
 nrow(ames)
+
+
 # TEST 2: Classification Tree
 # TODO
 {
+  # ===Klassifikation High/Low ===
   
+  median_price <- median(ames$Sale_Price)
+  ames$AboveMedian <- ifelse(ames$Sale_Price > median_price, "High", "Low")
+  
+  cart_tree_class <- generate_cart_tree(
+    dataSet = ames,
+    properties = 15,
+    n_nodes = 600,
+    mode = "classification",
+    target = "AboveMedian"
+  )
+  
+  test_results_class <- test_cart(
+    tree = cart_tree_class,
+    dataPoints = ames[420:800,],
+    mode = "classification",
+    target = "AboveMedian"
+  )
+  
+  print(test_results_class)
+  cat("\nAccuracy:\n", attr(test_results_class, "accuracy"))
+  cat("\nConfusion Matrix:\n")
+  print(attr(test_results_class, "confusion_matrix"))
+  
+  
+  # === Klassifikation OverallQual ===
+  
+  ames$QualClass <- factor(ames$Overall_Qual)
+  ames$QualClass
+  
+  cart_tree_qual <- generate_cart_tree(
+    dataSet = ames,
+    properties = 15,
+    n_nodes = 100,
+    mode = "classification",
+    target = "QualClass"
+  )
+  
+  test_results_qual <- test_cart(
+    tree = cart_tree_qual,
+    dataPoints = ames[720:740,],
+    mode = "classification",
+    target = "QualClass"
+  )
+  
+  print(test_results_qual)
+  cat("\nAccuracy:\n", attr(test_results_qual, "accuracy"))
+  cat("\nConfusion Matrix:\n")
+  print(attr(test_results_qual, "confusion_matrix"))
 }
+
 
 # TEST 3: Pruning
 # TODO
@@ -134,42 +187,25 @@ nrow(ames)
 }
 
 
-
-
-
-
-
-
-
-
-#Testing Tests (Nils)
-
-
-cart_tree1 <- generate_cart_tree( dataSet = ames, 
-                                 properties = 10, 
-                                 n_nodes = 10, 
-                                 mode = "regression",
-                                 target = "Sale_Price")
-# Visualizing fully grown Tree
-plot_cart_tree(cart_tree1)
-cart_tree1$properties
-
-
-cart_tree2 <- generate_cart_tree( dataSet = ames, 
-                                  properties = c(2, 34, 23, 5, 7), 
-                                  n_nodes = 10, 
-                                  mode = "regression",
-                                  target = "Sale_Price")
-# Visualizing fully grown Tree
-plot_cart_tree(cart_tree2)
-cart_tree2$properties
-
-
-cart_tree3 <- generate_cart_tree( dataSet = ames, 
-                                  properties = c("Lot_Area", "Garage_Area"), 
-                                  n_nodes = 10, 
-                                  mode = "regression",
-                                  target = "Sale_Price")
-# Visualizing fully grown Tree
-plot_cart_tree(cart_tree3)
-cart_tree3$properties
+# properties input tests
+{
+  # select properties by input
+  cart_tree2 <- generate_cart_tree( dataSet = ames, 
+                                    properties = c(2, 34, 23, 5, 7), 
+                                    n_nodes = 10, 
+                                    mode = "regression",
+                                    target = "Sale_Price")
+  # Visualizing fully grown Tree
+  plot_cart_tree(cart_tree2)
+  cart_tree2$properties
+  
+  # select properties by name
+  cart_tree3 <- generate_cart_tree( dataSet = ames, 
+                                    properties = c("Lot_Area", "Garage_Area"), 
+                                    n_nodes = 10, 
+                                    mode = "regression",
+                                    target = "Sale_Price")
+  # Visualizing fully grown Tree
+  plot_cart_tree(cart_tree3)
+  cart_tree3$properties
+}
