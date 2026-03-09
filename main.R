@@ -108,14 +108,14 @@ nrow(ames)
 {
   # generating cart tree
   cart_tree <- generate_cart_tree( dataSet = ames, 
-                                   properties = 20, 
+                                   properties = 34, 
                                    n_nodes = 50, 
                                    mode = "regression",
                                    target = "Sale_Price")
+  
   # Visualizing fully grown Tree
   plot_cart_tree(cart_tree)
   
-  # Pruning Algorithm and Visualization
   pruned_tree <- prune_tree(cart_tree, K = 5)
   plot_cart_tree(pruned_tree$optimal_tree)
   
