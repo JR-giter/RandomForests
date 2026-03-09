@@ -25,6 +25,8 @@ clone_tree <- function(node) {
   new$X <- node$X
   new$y <- node$y
   
+  new$properties <- node$properties
+  
   new$left_child <- clone_tree(node$left_child)
   new$right_child <- clone_tree(node$right_child)
   

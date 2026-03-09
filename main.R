@@ -30,7 +30,7 @@ ames<- make_ames()
   # generating cart tree
   cart_tree <- generate_cart_tree( dataSet = ames, 
                                    properties = 5, 
-                                   n_nodes = 600, 
+                                   n_nodes = 100, 
                                    mode = "regression",
                                    target = "Sale_Price")
   
@@ -118,6 +118,11 @@ nrow(ames)
   # Pruning Algorithm and Visualization
   pruned_tree <- prune_tree(cart_tree, K = 5)
   plot_cart_tree(pruned_tree$optimal_tree)
+  
+  test_results <- test_cart( tree = pruned_tree$optimal_tree,
+                             dataPoints = ames[2900:2930,], 
+                             mode = "regression",
+                             target = "Sale_Price")
   
   plot(pruned_tree$lambdas,
        pruned_tree$cv_values,
