@@ -158,7 +158,7 @@ get_all_used_features <- function(node, master_properties = NULL) {
   # 3. Lookup: Map the index 'j' to the actual name using the master list
   # If split_feature_j is already the name (string), this still works.
   current_feature <- master_properties[node$split_feature_j]
-  print(current_feature)
+  
   # 4. Recursion: Pass the master_properties down to the children
   left_side  <- get_all_used_features(node$left_child, master_properties)
   right_side <- get_all_used_features(node$right_child, master_properties)
@@ -166,7 +166,6 @@ get_all_used_features <- function(node, master_properties = NULL) {
   # 5. Combine and remove duplicates
   return(unique(c(current_feature, left_side, right_side)))
 }
-
 
 
 

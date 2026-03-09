@@ -56,7 +56,7 @@ rf_tree_regression <- function(X, y, m) {
     
     find_leaves(root)
     if (is.null(best_split)) break
-   
+    
     n_ptr <- best_split$node
     n_ptr$split_feature_j <- best_split$j
     n_ptr$split_value_i   <- best_split$s
@@ -71,7 +71,7 @@ rf_tree_regression <- function(X, y, m) {
 rf_tree_classification <- function(X, y, m) {
   d <- ncol(X)
   n <- nrow(X)
-
+  
   get_majority <- function(target) {
     if (length(target) == 0) return(NULL)
     tab <- table(target)

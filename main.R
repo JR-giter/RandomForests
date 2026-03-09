@@ -176,7 +176,7 @@ nrow(ames)
     target = target_var, 
     mode = "regression"
   )
-    
+
   # 4. Predict
   predictions <- predict_rf(my_rf, test_data)
   
