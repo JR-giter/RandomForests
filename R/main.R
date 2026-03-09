@@ -3,18 +3,13 @@ library(dplyr)
 library(tidyverse)
 library(ggplot2)
 
-library("devtools")
-devtools::load_all()
-load_all()
-ls("package:R-Project")
 # =============================================================
 # SECTION: Loading Testing Data
 # =============================================================
 
 #install.packages("AmesHousing")
 library(AmesHousing)
-ames<- make_ames()
-
+# ames<- make_ames()
 
 # =============================================================
 # SECTION: Different tests and applications based of ames
@@ -40,8 +35,6 @@ test1 <- function(){
   show_results(test_results)
 
 }
-test1()
-nrow(ames)
 
 
 # TEST 2: Classification Tree
@@ -98,7 +91,6 @@ test2 <- function(){
   cat("\nConfusion Matrix:\n")
   print(attr(test_results_qual, "confusion_matrix"))
 }
-
 
 # TEST 3: Pruning
 # TODO
@@ -188,7 +180,6 @@ test5 <- function(){
 
   show_results(results)
 }
-
 
 # properties input tests
 otherfunction <- function(){
