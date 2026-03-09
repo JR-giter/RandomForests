@@ -9,18 +9,18 @@
 # Benchmark Automation
 # =============================================================
 
-benchmark <- function(dataSet, properties, 
-                      n_nodes, test_start_node, 
+benchmark <- function(dataSet, properties,
+                      n_nodes, test_start_node,
                       test_end_node, n_runs){
-  
+
   total_start_time <- Sys.time()
   results <- vector("list", n_runs)
-  
+
   pb <- txtProgressBar(min = 0, max = n_runs, style = 3)
-  
+
   for(i in seq_len(n_runs)){
     start_time <- Sys.time()
-    
+
     tree_i <- generate_cart_tree(
       dataSet    = ames,
       properties = properties,
@@ -28,16 +28,16 @@ benchmark <- function(dataSet, properties,
       mode       = "regression",
       target     = "Sale_Price"
     )
-    
+
     end_time <- Sys.time()
-    
+
     test_i <- test_cart( tree = tree_i,
-                         dataPoints = ames[test_start_node:test_end_node,], 
+                         dataPoints = ames[test_start_node:test_end_node,],
                          mode = "regression",
                          target = "Sale_Price")
-    
+
     c_test <- calc_results(test_i)
-    
+
     results[[i]] <- list(
       max = c_test[["max"]],
       min = c_test[["min"]],
@@ -45,22 +45,22 @@ benchmark <- function(dataSet, properties,
       median = c_test[["median"]],
       runtime = as.numeric(end_time - start_time, units = "secs")
     )
-    
+
     setTxtProgressBar(pb, i)
   }
-  
+
   close(pb)
-  
+
   total_end_time <- Sys.time()
   total_runtime <- as.numeric(total_end_time - total_start_time, units = "secs")
-  
+
   if (total_runtime < 60) {
     cat("Total Runtime:", round(total_runtime, 2), "sec\n")
   } else {
     cat("Total Runtime:", round(total_runtime / 60, 2), "min\n")
   }
-  
-  
+
+
   df <- do.call(rbind, lapply(results, as.data.frame))
   df
 }
@@ -81,15 +81,15 @@ run_and_plot_benchmarks <- function(
     n_nodes         = n_nodes,
     test_start_node = test_start_node
   )
-  
+
   # Der Vektor ist der Parameter mit Länge > 1
   vector_param <- names(param_list)[which(sapply(param_list, length) > 1)]
   vector_values <- param_list[[vector_param]]
-  
+
   if (length(vector_param) != 1) {
     stop("Exactly one of: properties, n_nodes, test_start_node must be a vector.")
   }
-  
+
   # --- 2) Benchmarks ausführen ---
   benchmarks <- lapply(vector_values, function(v){
     benchmark(
@@ -101,12 +101,12 @@ run_and_plot_benchmarks <- function(
       n_runs = n_runs
     )
   })
-  
+
   # --- 3) Letzte Werte extrahieren ---
   extract_last <- function(df) {
     tail(df, 1)[, c("mean", "median", "runtime")]
   }
-  
+
   bm_last <- do.call(rbind, lapply(seq_along(benchmarks), function(i){
     cbind(
       x_index = i,
@@ -114,18 +114,18 @@ run_and_plot_benchmarks <- function(
       extract_last(benchmarks[[i]])
     )
   }))
-  
+
   # --- 4) Long Format für ggplot ---
   library(tidyr)
   library(ggplot2)
-  
+
   plot_data <- pivot_longer(
     bm_last,
     cols = c(mean, median, runtime),
     names_to = "metric",
     values_to = "value"
   )
-  
+
   # --- 5) Plot ---
   ggplot(plot_data, aes(x = x_index, y = value, color = metric, group = metric)) +
     geom_line(linewidth = 1.2) +
@@ -148,41 +148,49 @@ run_and_plot_benchmarks <- function(
 # =============================================================
 # Benchmarking for Property Number
 # =============================================================
-run_and_plot_benchmarks(
-  title = "Benchmarking Properties",
-  x_name = "Number of Properties",
-  dataSet = ames,
-  properties = c(5, 10, 20, 30),
-  n_nodes = 500,
-  test_start_node = 2000,
-  test_end_node = 2500,
-  n_runs = 10
-)
+pn_Test <- function(){
+  run_and_plot_benchmarks(
+    title = "Benchmarking Properties",
+    x_name = "Number of Properties",
+    dataSet = ames,
+    properties = c(5, 10, 20, 30),
+    n_nodes = 500,
+    test_start_node = 2000,
+    test_end_node = 2500,
+    n_runs = 10
+  )
+}
 
 # =============================================================
 # Benchmarking for Number of Nodes
 # =============================================================
-run_and_plot_benchmarks(
-  title = "Benchmarking Number of Nodes",
-  x_name = "Number of Nodes",
-  dataSet = ames,
-  properties = 10,
-  n_nodes = c(250, 500, 1000, 2000),
-  test_start_node = 2000,
-  test_end_node = 2500,
-  n_runs = 10
-)
+nn_Test <- function(){
+  run_and_plot_benchmarks(
+    title = "Benchmarking Number of Nodes",
+    x_name = "Number of Nodes",
+    dataSet = ames,
+    properties = 10,
+    n_nodes = c(250, 500, 1000, 2000),
+    test_start_node = 2000,
+    test_end_node = 2500,
+    n_runs = 10
+  )
+}
+
 
 # =============================================================
 # Benchmarking for Number of Test Nodes
 # =============================================================
-run_and_plot_benchmarks(
-  title = "Benchmarking Number of Test Nodes",
-  x_name = "Number of Test Nodes",
-  dataSet = ames,
-  properties = 10,
-  n_nodes = 500,
-  test_start_node = c(500, 1000, 1500, 2000),
-  test_end_node = 2500,
-  n_runs = 10
-)
+ntn_Test <- function(){
+  run_and_plot_benchmarks(
+    title = "Benchmarking Number of Test Nodes",
+    x_name = "Number of Test Nodes",
+    dataSet = ames,
+    properties = 10,
+    n_nodes = 500,
+    test_start_node = c(500, 1000, 1500, 2000),
+    test_end_node = 2500,
+    n_runs = 10
+  )
+}
+
