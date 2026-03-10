@@ -1,16 +1,26 @@
 Package: RandomForests
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
+Title: Tools for classification and regression using random forests
+Version: 1.0
 Authors@R: c(
     person(
-      "Jane", "Doe",
-      email = "jane@example.com",
-      role = c("aut", "cre")
+      "Alexander", "Kolb",
+      role = c("aut")
+    )
+    person(
+      "Luke", "Böhler",
+      role = c("aut")
+    )
+    person(
+      "Joel", "Reiß",
+      role = c("aut")
+    )
+    person(
+      "Nils", "Blum",
+      role = c("aut")
     )
   )
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
+Description: (to do) 
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
