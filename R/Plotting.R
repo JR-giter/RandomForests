@@ -41,7 +41,7 @@ calc_results <- function(test_results){
 .node_env <- new.env(parent = emptyenv())
 .node_env$.node_id_counter <- 0L
 
-#' @export
+
 new_node_id <- function() {
   # Increment the counter inside the environment
   .node_env$.node_id_counter <- .node_env$.node_id_counter + 1L

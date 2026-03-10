@@ -1,8 +1,7 @@
-#' Generate Bootstrap Samples
-#' @keywords internal
+# Generate Bootstrap Samples
 bootstrap_sample <- function(dataSet) {
   n <- nrow(dataSet)
-  idx <- sample(seq_len(n), size = n, replace = TRUE) # ziehen mit zurücklegen
+  idx <- sample(seq_len(n), size = n, replace = TRUE) # pull with laying back
   dataSet[idx, , drop = FALSE]
 }
 
@@ -100,5 +99,3 @@ test_bagging <- function(models, dataPoints, mode, target) {
     return(result)
   }
 }
-
-
