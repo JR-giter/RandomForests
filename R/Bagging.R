@@ -59,7 +59,7 @@ test_bagging <- function(models, dataPoints, mode, target) {
   if (mode == "regression") {
     result$delta <- abs(y - bagged_preds) / y * 100
   }
-  else (mode == "classification") {
+  else if (mode == "classification") {
     result$delta <- ifelse(result$actual == result$prediction, 0, 100)
     attr(result, "accuracy") <- mean(result$delta == 0) * 100
   }
