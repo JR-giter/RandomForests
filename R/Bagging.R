@@ -1,4 +1,5 @@
-# generating a boootstrap sample out of our data set
+#' Generate Bootstrap Samples
+#' @keywords internal
 bootstrap_sample <- function(dataSet) {
   n <- nrow(dataSet)
   idx <- sample(seq_len(n), size = n, replace = TRUE) # ziehen mit zurücklegen
@@ -15,11 +16,9 @@ bootstrap_sample <- function(dataSet) {
 #' @param n_nodes number of nodes taken out of dataset starting from 1
 #' @param mode select between regression and classification
 #' @param target target attribute for tree generation
-#'
 #' @return generated trees
-#'
 #' @examples
-#' tree_models <- bagging_greedycart
+#' bagging_greedycart
 #' (
 #' data = ames,
 #' n_bootstrapSamples = 20,
@@ -28,7 +27,6 @@ bootstrap_sample <- function(dataSet) {
 #' mode = "regression",
 #' target = "Sale_Price"
 #' )
-#'
 #' @export
 bagging_greedycart <- function(data, n_bootstrapSamples, properties, n_nodes, mode, target) {
 
@@ -60,18 +58,15 @@ bagging_greedycart <- function(data, n_bootstrapSamples, properties, n_nodes, mo
 #' @param dataPoints test datapoints
 #' @param mode select between regression and classification
 #' @param target target attribute
-#'
 #' @return generated trees
-#'
 #' @examples
-#' test_results <- test_bagging
+#' test_bagging
 #' (
 #' models = models,
 #' dataPoints = ames[120:130,],
 #' mode = "regression",
 #' target = "Sale_Price"
 #' )
-#'
 #' @export
 test_bagging <- function(models, dataPoints, mode, target) {
 

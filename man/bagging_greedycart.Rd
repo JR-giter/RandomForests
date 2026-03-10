@@ -26,7 +26,7 @@ generated trees
 This function generates bootstrap samples based on input.
 }
 \examples{
-tree_models <- bagging_greedycart
+bagging_greedycart
 (
 data = ames,
 n_bootstrapSamples = 20,
@@ -35,5 +35,4 @@ n_nodes = 100,
 mode = "regression",
 target = "Sale_Price"
 )
-
 }

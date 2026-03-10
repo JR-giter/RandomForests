@@ -22,12 +22,11 @@ generated trees
 This function tests inputs on given bagging trees.
 }
 \examples{
-test_results <- test_bagging
+test_bagging
 (
 models = models,
 dataPoints = ames[120:130,],
 mode = "regression",
 target = "Sale_Price"
 )
-
 }
