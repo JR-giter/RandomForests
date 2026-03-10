@@ -41,6 +41,7 @@ calc_results <- function(test_results){
 .node_env <- new.env(parent = emptyenv())
 .node_env$.node_id_counter <- 0L
 
+#' @export
 new_node_id <- function() {
   # Increment the counter inside the environment
   .node_env$.node_id_counter <- .node_env$.node_id_counter + 1L
@@ -48,7 +49,6 @@ new_node_id <- function() {
 }
 
 tree_to_df <- function(node) {
-
   leaf_index <- 0
   nodes <- data.frame(
     id = character(),
@@ -138,12 +138,10 @@ plot_cart_tree <- function(tree) {
       data = td$nodes,
       aes(x = x, y = y, label = label),
       size = 3,
-      label.size = 0.25
+      linewidth = 0.25
     ) +
     theme_void() +
     coord_cartesian(clip = "off") +
     scale_x_continuous(expand = expansion(mult = 0.2)) +
     scale_y_continuous(expand = expansion(mult = 0.2))
 }
-
-
