@@ -47,11 +47,13 @@ test2 <- function(){
 
   cart_tree_class <- generate_cart_tree(
     dataSet = ames,
-    properties = 15,
-    n_nodes = 600,
+    properties = 5,
+    n_nodes = 100,
     mode = "classification",
     target = "AboveMedian"
   )
+
+  pruned_class <- prune_tree(cart_tree_class, K = 5)
 
   test_results_class <- test_cart(
     tree = cart_tree_class,
