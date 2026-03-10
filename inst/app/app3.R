@@ -149,7 +149,7 @@ server <- function(input, output, session) {
         res_model <- pruned_res$optimal_tree
         results <- test_cart(res_model, test_data, input$mode, input$target)
       } else if (input$model_choice == "Bagging") {
-        res_model <- bagging_greedycart(data_df, input$bootstrap, input$properties, input$nodes, input$target)
+        res_model <- bagging_greedycart(data_df, input$bootstrap, input$properties, input$nodes, input$mode, input$target)
         results <- test_bagging(res_model, test_data, input$mode, input$target)
       }  else if (input$model_choice == "Random Forest") {
         train_subset <- data_df[1:input$nodes, ]
