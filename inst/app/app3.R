@@ -44,7 +44,6 @@ get_model_features <- function(model_obj) {
   }
 
   result <- sort(unique(as.character(all_found[!is.na(all_found) & all_found != ""])))
-  message("Features found: ", length(result))
   return(result)
 }
 
@@ -78,9 +77,9 @@ ui <- fluidPage(
         column(3, numericInput("bootstrap", "Bootstrap Samples:", 20),
                numericInput("treecount", "Tree Count:", 50))
       ),
-      actionButton("run_model", "Train Model", class = "btn-primary", width = "100%"),
+      actionButton("run_model", "Generate Tree(s)", class = "btn-primary", width = "100%"),
       hr(),
-      h4("Results (Holdout 2900:2930)"),
+      h4("Results (Tested on 30 Objects)"),
       verbatimTextOutput("runtime"),
       verbatimTextOutput("metrics")
     ))
@@ -88,10 +87,10 @@ ui <- fluidPage(
 
   fluidRow(
     column(12, wellPanel(
-      h3("House Evaluator (Live Prediction)"),
+      h3("Evaluator"),
       uiOutput("dynamic_inputs"),
       hr(),
-      h4("Estimated Value:"),
+      h4("Estimated Value/Class:"),
       span(textOutput("prediction_output"), style="font-size: 28px; color: #2c3e50; font-weight: bold;")
     ))
   )
