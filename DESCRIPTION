@@ -20,7 +20,8 @@ Authors@R: c(
       role = c("aut")
     )
   )
-Description: (to do) 
-License: What license is it under?
+Description: The package enables the creation of decision trees and random forests for classification and regression on a given dataset.
+             It also provides algorithms for bagging and pruning.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
