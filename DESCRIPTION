@@ -12,5 +12,5 @@ Description: The package enables the creation of decision trees and random fores
              It also provides algorithms for bagging and pruning.
 License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
+LazyData: false
 RoxygenNote: 7.3.3

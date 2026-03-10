@@ -2,37 +2,30 @@
 % Please edit documentation in R/Bagging.R
 \name{bagging_greedycart}
 \alias{bagging_greedycart}
-\title{Generating Bootstrapsamples}
+\title{Bagging Greedy CART}
 \usage{
 bagging_greedycart(data, n_bootstrapSamples, properties, n_nodes, mode, target)
 }
 \arguments{
-\item{data}{is the dataset you are working on}
+\item{data}{dataset}
 
-\item{n_bootstrapSamples}{number of bootstrap samples taken out of data nodes}
+\item{n_bootstrapSamples}{number of bootstrap samples}
 
 \item{properties}{number of properties}
 
-\item{n_nodes}{number of nodes taken out of dataset starting from 1}
+\item{n_nodes}{number of nodes}
 
-\item{mode}{select between regression and classification}
+\item{mode}{regression or classification}
 
-\item{target}{target attribute for tree generation}
+\item{target}{target column}
 }
 \value{
-generated trees
+list of trees
 }
 \description{
-This function generates bootstrap samples based on input.
+Bagging Greedy CART
 }
 \examples{
-bagging_greedycart
-(
-data = ames,
-n_bootstrapSamples = 20,
-properties = 20,
-n_nodes = 100,
-mode = "regression",
-target = "Sale_Price"
-)
+bagging_greedycart(data = ames, n_bootstrapSamples = 20, properties = 20,
+n_nodes = 100, mode = "regression", target = "Sale_Price")
 }

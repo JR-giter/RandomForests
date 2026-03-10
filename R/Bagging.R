@@ -6,27 +6,17 @@ bootstrap_sample <- function(dataSet) {
   dataSet[idx, , drop = FALSE]
 }
 
-#' Generating Bootstrapsamples
-#'
-#' This function generates bootstrap samples based on input.
-#'
-#' @param data is the dataset you are working on
-#' @param n_bootstrapSamples number of bootstrap samples taken out of data nodes
+#' Bagging Greedy CART
+#' @param data dataset
+#' @param n_bootstrapSamples number of bootstrap samples
 #' @param properties number of properties
-#' @param n_nodes number of nodes taken out of dataset starting from 1
-#' @param mode select between regression and classification
-#' @param target target attribute for tree generation
-#' @return generated trees
+#' @param n_nodes number of nodes
+#' @param mode regression or classification
+#' @param target target column
+#' @return list of trees
 #' @examples
-#' bagging_greedycart
-#' (
-#' data = ames,
-#' n_bootstrapSamples = 20,
-#' properties = 20,
-#' n_nodes = 100,
-#' mode = "regression",
-#' target = "Sale_Price"
-#' )
+#' bagging_greedycart(data = ames, n_bootstrapSamples = 20, properties = 20,
+#' n_nodes = 100, mode = "regression", target = "Sale_Price")
 #' @export
 bagging_greedycart <- function(data, n_bootstrapSamples, properties, n_nodes, mode, target) {
 
@@ -50,23 +40,15 @@ bagging_greedycart <- function(data, n_bootstrapSamples, properties, n_nodes, mo
   models
 }
 
-#' Testing Bagging results
-#'
-#' This function tests inputs on given bagging trees.
-#'
-#' @param models input trees from bagging_greedycart
-#' @param dataPoints test datapoints
-#' @param mode select between regression and classification
-#' @param target target attribute
-#' @return generated trees
+#' Testing Bagging Results
+#' @param models bagging models
+#' @param dataPoints test dataset
+#' @param mode regression or classification
+#' @param target target column
+#' @return data.frame with actual/predicted
 #' @examples
-#' test_bagging
-#' (
-#' models = models,
-#' dataPoints = ames[120:130,],
-#' mode = "regression",
-#' target = "Sale_Price"
-#' )
+#' test_bagging(models = models, dataPoints = ames[1:10,], mode="regression",
+#' target="Sale_Price")
 #' @export
 test_bagging <- function(models, dataPoints, mode, target) {
 

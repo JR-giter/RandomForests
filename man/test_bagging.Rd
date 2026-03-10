@@ -2,31 +2,26 @@
 % Please edit documentation in R/Bagging.R
 \name{test_bagging}
 \alias{test_bagging}
-\title{Testing Bagging results}
+\title{Testing Bagging Results}
 \usage{
 test_bagging(models, dataPoints, mode, target)
 }
 \arguments{
-\item{models}{input trees from bagging_greedycart}
+\item{models}{bagging models}
 
-\item{dataPoints}{test datapoints}
+\item{dataPoints}{test dataset}
 
-\item{mode}{select between regression and classification}
+\item{mode}{regression or classification}
 
-\item{target}{target attribute}
+\item{target}{target column}
 }
 \value{
-generated trees
+data.frame with actual/predicted
 }
 \description{
-This function tests inputs on given bagging trees.
+Testing Bagging Results
 }
 \examples{
-test_bagging
-(
-models = models,
-dataPoints = ames[120:130,],
-mode = "regression",
-target = "Sale_Price"
-)
+test_bagging(models = models, dataPoints = ames[1:10,], mode="regression",
+target="Sale_Price")
 }
