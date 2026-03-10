@@ -3,25 +3,14 @@ Type: Package
 Title: Tools for classification and regression using random forests
 Version: 1.0
 Authors@R: c(
-    person(
-      "Alexander", "Kolb",
-      role = c("aut")
-    )
-    person(
-      "Luke", "Böhler",
-      role = c("aut")
-    )
-    person(
-      "Joel", "Reiß",
-      role = c("aut")
-    )
-    person(
-      "Nils", "Blum",
-      role = c("aut")
-    )
+    person("Alexander", "Kolb", role = c("aut")),
+    person("Luke", "Böhler", role = c("aut")),
+    person("Joel", "Reiß", role = c("aut", "cre"), email = "Letters.Kubides@gmx.de"),
+    person("Nils", "Blum", role = c("aut"))
   )
 Description: The package enables the creation of decision trees and random forests for classification and regression on a given dataset.
              It also provides algorithms for bagging and pruning.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 7.3.3
