@@ -48,12 +48,13 @@ test2 <- function(){
   cart_tree_class <- generate_cart_tree(
     dataSet = ames,
     properties = 5,
-    n_nodes = 100,
+    n_nodes = 300,
     mode = "classification",
     target = "AboveMedian"
   )
-
-  pruned_class <- prune_tree(cart_tree_class, K = 5)
+  plot_cart_tree(cart_tree_class)
+  pruned_class <- prune_tree(cart_tree_class, K = 5, mode = "classification")
+  plot_cart_tree(pruned_class$optimal_tree)
 
   test_results_class <- test_cart(
     tree = cart_tree_class,

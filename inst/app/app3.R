@@ -144,7 +144,7 @@ server <- function(input, output, session) {
         results <- test_cart(res_model, test_data, input$mode, input$target)
       } else if (input$model_choice == "Pruning") {
         full <- generate_cart_tree(data_df, input$properties, input$nodes, input$mode, input$target)
-        pruned_res <- prune_tree(full, K = 5)
+        pruned_res <- prune_tree(full, K = 5, mode = input$mode)
         res_model <- pruned_res$optimal_tree
         results <- test_cart(res_model, test_data, input$mode, input$target)
       } else if (input$model_choice == "Bagging") {
