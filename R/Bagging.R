@@ -34,36 +34,54 @@ bagging_greedycart <- function(data, n_bootstrapSamples, properties, n_nodes, mo
 
 # testing bagging_trees
 test_bagging <- function(models, dataPoints, mode, target) {
+
   # Extract features used by the first tree
   X <- as.matrix(dataPoints[, models[[1]]$properties, drop = FALSE])
 
-  # Get actual target
+  # Get Actual target
   y <- dataPoints[[target]]
 
-  # Initialize matrix to store predictions
+  # Prediction matrix
   pred_matrix <- matrix(NA, nrow = nrow(X), ncol = length(models))
 
-  # Loop over each model
   for (i in seq_along(models)) {
     tree <- models[[i]]
     pred_matrix[, i] <- apply(X, 1, function(row) predict_cart(tree, row))
   }
 
-  # Bagged predictions (average for regression)
-  bagged_preds <- rowMeans(pred_matrix)
 
-  # Create result data frame
-  result <- data.frame(actual = y, prediction = bagged_preds)
-
-  # Calculate delta for regression or classification
+  # REGRESSION
   if (mode == "regression") {
-    result$delta <- abs(y - bagged_preds) / y * 100
-  }
-  else if (mode == "classification") {
-    result$delta <- ifelse(result$actual == result$prediction, 0, 100)
-    attr(result, "accuracy") <- mean(result$delta == 0) * 100
+
+    bagged_preds <- rowMeans(pred_matrix)
+
+    result <- data.frame(
+      actual = y,
+      prediction = bagged_preds,
+      delta = abs(y - bagged_preds) / y * 100
+    )
+
+    return(result)
   }
 
-  return(result)
+
+  # CLASSIFICATION (Mehrheitsvoting)
+  if (mode == "classification") {
+
+    bagged_preds <- apply(pred_matrix, 1, function(row) {
+      names(sort(table(row), decreasing = TRUE))[1]
+    })
+
+    result <- data.frame(
+      actual = y,
+      prediction = bagged_preds,
+      delta = ifelse(y == bagged_preds, 0, 100)
+    )
+
+    attr(result, "accuracy") <- mean(y == bagged_preds) * 100
+
+    return(result)
+  }
 }
+
 

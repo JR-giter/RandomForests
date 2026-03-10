@@ -220,19 +220,39 @@ server <- function(input, output, session) {
     tryCatch({
       if (input$model_choice %in% c("Greedy", "Pruning")) {
         res <- predict_cart(model, input_vals)
+
       } else if (input$model_choice == "Bagging") {
-        res <- mean(sapply(model, function(t) predict_cart(t, input_vals)))
+
+        preds <- sapply(model, function(t) predict_cart(t, input_vals))
+
+        if (input$mode == "regression") {
+          res <- mean(as.numeric(preds))
+        } else {
+          # Mehrheitsvoting
+          res <- names(sort(table(preds), decreasing = TRUE))[1]
+        }
+
       } else if (input$model_choice == "Random Forest") {
         df_row <- as.data.frame(t(input_vals))
         colnames(df_row) <- props
         res <- predict_rf(model, df_row)
       }
 
-      if(input$mode == "regression") {
-        paste0("$", format(round(res, 2), big.mark=","))
+
+      is_money <- grepl("price|cost|value|sale", tolower(input$target))
+
+      if (input$mode == "regression") {
+
+        if (is_money) {
+          paste0("$", format(round(res, 2), big.mark=","))
+        } else {
+          format(round(res, 2), big.mark=",")
+        }
+
       } else {
         as.character(res)
       }
+
     }, error = function(e) "Ready...")
   })
 }
