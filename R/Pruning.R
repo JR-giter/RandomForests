@@ -84,6 +84,28 @@ compute_g <- function(node, y, mode = "regression", result = list()) {
   result
 }
 
+predict_single <- function(node,x){
+
+  if(is.null(node$split_feature_j))
+    return(node$prediction)
+
+  j <- node$split_feature_j
+  s <- node$split_value_i
+
+  if(x[j] < s)
+    predict_single(node$left_child,x)
+  else
+    predict_single(node$right_child,x)
+}
+
+predict_tree <- function(tree,X,indices){
+
+
+  sapply(indices,function(i)
+    predict_single(tree,X[i,])
+  )
+}
+
 ############################################################
 # PRUNE & SEQUENCE (Updated with Mode)
 ############################################################
