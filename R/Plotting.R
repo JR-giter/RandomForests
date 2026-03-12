@@ -1,4 +1,4 @@
-# visualizing results
+# V isualizing results
 show_results <- function(test_results){
   # comparing test results to actual results
   # print(test_results)
@@ -36,18 +36,17 @@ calc_results <- function(test_results){
 # =============================================================
 
 
-
-# Initialize a counter in a separate environment (mutable)
+# Node-Counter
 .node_env <- new.env(parent = emptyenv())
 .node_env$.node_id_counter <- 0L
 
-
+# Function to give Nodes their ID
 new_node_id <- function() {
-  # Increment the counter inside the environment
   .node_env$.node_id_counter <- .node_env$.node_id_counter + 1L
   paste0("node_", .node_env$.node_id_counter)
 }
 
+# HelperFunction: Converting a CART into a DateFrame
 tree_to_df <- function(node) {
   leaf_index <- 0
   nodes <- data.frame(
@@ -81,7 +80,6 @@ tree_to_df <- function(node) {
              " < ", round(node$split_value_i, 2))
     }
 
-    # ---- LEAF ----
     if (is_leaf) {
       leaf_index <<- leaf_index + 1
       x_pos <- leaf_index
@@ -96,7 +94,6 @@ tree_to_df <- function(node) {
       return(x_pos)
     }
 
-    # ---- INTERNAL NODE ----
     left_x  <- layout_tree(node$left_child, depth + 1)
     right_x <- layout_tree(node$right_child, depth + 1)
 
@@ -121,7 +118,18 @@ tree_to_df <- function(node) {
   list(nodes = nodes, edges = edges)
 }
 
+# Function used to Plot the Tree
 
+#' Visualize a CART Decision Tree
+#' Creates a graphical representation of a Classification and Regression Tree (CART)
+#' using \code{ggplot2}.
+#' @param tree A root node object of a CART tree, containing split features, values, and child references.
+#' @return A \code{ggplot} object representing the hierarchical structure of the tree.
+#' @import ggplot2
+#' @examples
+#' # Assuming 'my_tree' is a trained CART model:
+#' # plot_cart_tree(my_tree)
+#' @export
 plot_cart_tree <- function(tree) {
   td <- tree_to_df(tree)
 

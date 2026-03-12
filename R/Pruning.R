@@ -1,7 +1,8 @@
-############################################################
-# HELPER FUNCTIONS (Structural - Unchanged)
-############################################################
+####
+# Pruning
+####
 
+# Helper Functions
 is_leaf <- function(node) {
   is.null(node$left_child) && is.null(node$right_child)
 }
@@ -30,22 +31,16 @@ clone_tree <- function(node) {
   new
 }
 
-############################################################
-# RISK CALCULATION (Updated for Classification)
-############################################################
-
+# Risk Calculation with mode as argument. For (sub)trees and then nodes on recursion end.
 node_risk <- function(node, y, mode = "regression") {
   idx <- node$indices
   if (length(idx) == 0) return(0)
 
-  # The prediction stored in the node (Mean for reg, Mode for class)
   pred <- node$prediction
 
   if (mode == "regression") {
-    # Sum of Squared Errors
     return(sum((y[idx] - pred)^2))
   } else {
-    # Misclassification count
     return(sum(y[idx] != pred))
   }
 }
@@ -58,10 +53,8 @@ subtree_risk <- function(node, y, mode = "regression") {
     subtree_risk(node$right_child, y, mode)
 }
 
-############################################################
-# WEAKEST LINK g(t) (Updated with Mode)
-############################################################
 
+# Weakest Link Computation. Here noted with "g" as variable.
 compute_g <- function(node, y, mode = "regression", result = list()) {
   if (is_leaf(node))
     return(result)
@@ -70,7 +63,7 @@ compute_g <- function(node, y, mode = "regression", result = list()) {
   RTt <- subtree_risk(node, y, mode)
   leaves <- num_leaves(node)
 
-  # Complexity measure g(t)
+  # Easier Form of 6.15 (Definition inside the Pruning Chapter)
   g <- (Rt - RTt) / (leaves - 1)
 
   result[[length(result) + 1]] <- list(
@@ -84,6 +77,7 @@ compute_g <- function(node, y, mode = "regression", result = list()) {
   result
 }
 
+# Prediciton functions
 predict_single <- function(node,x){
 
   if(is.null(node$split_feature_j))
@@ -106,10 +100,7 @@ predict_tree <- function(tree,X,indices){
   )
 }
 
-############################################################
-# PRUNE & SEQUENCE (Updated with Mode)
-############################################################
-
+# Actual Pruning and Sequencing
 prune_node <- function(node) {
   node$left_child  <- NULL
   node$right_child <- NULL
@@ -144,6 +135,7 @@ cost_complexity_sequence <- function(tree, y, mode = "regression") {
   list(trees = trees, alphas = alphas)
 }
 
+# Select the best Tree with given Lambda
 select_tree_lambda <- function(seq, lambda, y, mode = "regression") {
   best <- seq$trees[[1]]
   best_score <- Inf
@@ -163,10 +155,33 @@ select_tree_lambda <- function(seq, lambda, y, mode = "regression") {
   best
 }
 
-############################################################
-# MAIN PRUNE FUNCTION (Full Overhaul)
-############################################################
+# Main Prune function need to prune a CART.
 
+#' Prune a CART Tree using Cost-Complexity Pruning
+#'
+#' This function performs cost-complexity pruning on a fully grown CART tree.
+#' It generates a sequence of subtrees by iteratively removing the "weakest link"
+#' and uses K-fold cross-validation to select the optimal complexity parameter (lambda).
+#' The final output is the subtree that minimizes the cross-validated error.
+#'
+#' @param tree A root node object of a fully grown CART tree.
+#' @param lambdas A numeric vector of complexity parameters to evaluate. If
+#'   \code{NULL} (default), the function automatically extracts the unique
+#'   critical values from the tree's cost-complexity sequence.
+#' @param K An integer specifying the number of folds for cross-validation.
+#'   Default is 5.
+#' @param mode A character string indicating the type of tree: either
+#'   \code{"regression"} or \code{"classification"}. Default is \code{"regression"}.
+#'
+#' @return Returning a list containing:
+#' \itemize{
+#'   \item \code{optimal_tree}: The pruned tree object that performed best in CV.
+#'   \item \code{best_lambda}: The complexity parameter \code{lambda} that minimized the CV error.
+#'   \item \code{cv_values}: A numeric vector of the average cross-validation errors for each lambda.
+#'   \item \code{lambdas}: The vector of lambda values used during the process.
+#'   \item \code{sequence}: The full cost-complexity sequence of trees and their corresponding alphas.
+#' }
+#'
 #' @export
 prune_tree <- function(tree, lambdas = NULL, K = 5, mode = "regression") {
   X <- tree$X
@@ -181,7 +196,7 @@ prune_tree <- function(tree, lambdas = NULL, K = 5, mode = "regression") {
     if (mode == "regression") {
       new_tree <- greedy_cart_regression(Xsub, ysub)
     } else {
-      # Assumes you have a classification version of your trainer
+
       new_tree <- greedy_cart_classification(Xsub, ysub)
     }
 
@@ -214,7 +229,6 @@ prune_tree <- function(tree, lambdas = NULL, K = 5, mode = "regression") {
       lambda <- lambdas[i]
       pruned <- select_tree_lambda(seq, lambda, train_tree$y, mode)
 
-      # Use the logic from your predict_tree function
       preds <- predict_tree(pruned, X, val_idx)
 
       if (mode == "regression") {
