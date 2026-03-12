@@ -9,8 +9,12 @@ Authors@R: c(
     person("Nils", "Blum", role = c("aut"))
   )
 Description: The package enables the creation of decision trees and random forests for classification and regression on a given dataset.
-             It also provides algorithms for bagging and pruning.
+             It also provides algorithms for bagging and pruning as well as a shiny app for easier use.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: false
 RoxygenNote: 7.3.3
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

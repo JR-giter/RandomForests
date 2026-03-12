@@ -1,0 +1,131 @@
+---
+title: "Introduction to the package Random Forests"
+author: Alexander Kolb, Joel Reiß, Nils Blum, Luke Böhler
+date: (to do)
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to the package Random Forests}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This vignette will show you how to work with the package in the following steps:
+
+  - Creating a decision tree for regression or classification 
+  
+  - Applying cost-complexity pruning to a previously generated tree in order to reduce its size and avoid overfitting
+
+  - Using the bagging algorithm to generate multiple bootstrap datasets and corresponding trees for improved predictions
+
+  - Using the random forest algorithm to generate a diverse ensemble of trees to get better predictions
+  
+To illustrate the functionality, we will use the Ames Housing dataset throughout the examples.
+
+```{r setup}
+library(RandomForests)
+library(AmesHousing)
+ames <- make_ames() # get dataset
+```
+
+### Creating a decision tree for regression or classification
+
+To generate a classification-and-regression-tree (CART) on a given dataset you use the function  ``` generate_cart_tree()  ```:
+
+```
+cart <- generate_cart_tree( dataSet = ames,
+                            properties = 20,
+                            n_nodes = 100,
+                            mode = "regression",
+                            target = "Sale_Price")
+```
+After that you can get the prediction for a datapoint of your choice using ``` predict_tree() ``` :
+  
+→ checking for the properties the CART algorithm used:
+  
+  ```
+  cart$properties
+
+  #> [1] "Gr_Liv_Area"    "Garage_Cars"    "Garage_Area"    "Total_Bsmt_SF"  "First_Flr_SF"  "TotRms_AbvGrd"  "Year_Built"     "Full_Bath"     
+  #> [9] "Year_Remod_Add" "Mas_Vnr_Area"   "Lot_Area"       "Fireplaces"     "Open_Porch_SF"  "Latitude"       "Lot_Frontage"   "Bsmt_Unf_SF"   
+  #> [17] "Bsmt_Full_Bath" "Bedroom_AbvGr"  "Second_Flr_SF"  "Longitude"
+  ```
+  
+  
+  
+→ creating a datpoint with the same properties:
+  
+  ```
+  datapoint <- data.frame(
+    Gr_Liv_Area     = 1600,
+    Garage_Cars     = 2,
+    Garage_Area     = 500,
+    Total_Bsmt_SF   = 1100,
+    First_Flr_SF    = 1200,
+    TotRms_AbvGrd   = 7,
+    Year_Built      = 1995,
+    Full_Bath       = 2,
+    Year_Remod_Add  = 2005,
+    Mas_Vnr_Area    = 150,
+    Lot_Area        = 8000,
+    Fireplaces      = 1,
+    Open_Porch_SF   = 120,
+    Latitude        = 42.01,
+    Lot_Frontage    = 60,
+    Bsmt_Unf_SF     = 300,
+    Bsmt_Full_Bath  = 1,
+    Bedroom_AbvGr   = 3,
+    Second_Flr_SF   = 400,
+    Longitude       = -93.62
+  )
+  ```
+  
+  
+  
+
+→ getting a prediction for the entered values:
+  
+  ```
+  predict_cart(cart, datapoint)
+
+  #> [1] 181000
+  
+  
+  
+  
+  
+  test_results <- test_cart( tree = cart,
+                             dataPoints = ames[2900:2930,],
+                             mode = "regression",
+                             target = "Sale_Price")
+
+  printing + plotting results
+  show_results(test_results)
+
+  ```
+
+
+
+
+  
+
+  
+ 
+
+
+
+
+
+
+
+
+
+
+
+
