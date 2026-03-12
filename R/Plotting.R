@@ -1,4 +1,9 @@
-# V isualizing results
+#' Visualise testresults
+#' @param test_results results for some tests done prior
+#' @return prints and plots some testresult stats
+#' @examples
+#' show_results(test_results)
+#' @export
 show_results <- function(test_results){
   # comparing test results to actual results
   # print(test_results)
