@@ -134,7 +134,7 @@ server <- function(input, output, session) {
   # --- 2. RUN MODEL ---
   observeEvent(input$run_model, {
     data_df <- get(input$dataset)
-    test_data <- data_df[2900:2930, ]
+    test_data <- data_df[(nrow(data_df) - 29):nrow(data_df), ]
     res_model <- NULL
     results <- NULL
 
