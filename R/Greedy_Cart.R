@@ -224,10 +224,10 @@ test_cart <- function(tree, dataPoints, mode = "regression", target) {
 #'
 #' @param model_obj A model object or tree structure. This can be:
 #' \itemize{
-#'   \item A **Random Forest/Bagging** object (list containing a \code{trees} element).
-#'   \item A **Pruned CART** object (list containing an \code{optimal_tree} element).
-#'   \item A **List** of tree environments.
-#'   \item A **Single** tree environment.
+#'   \item A Random Forest/Bagging object (list containing a \code{trees} element).
+#'   \item A Pruned CART object (list containing an \code{optimal_tree} element).
+#'   \item A List of tree environments.
+#'   \item A Single tree environment.
 #' }
 #'
 #' @details The function performs a recursive traversal ("crawl") of the tree
