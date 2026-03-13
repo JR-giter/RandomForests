@@ -45,8 +45,9 @@ cart <- generate_cart_tree( dataSet = ames,
                             mode = "regression",
                             target = "Sale_Price")
 ```
+<br>
 After that you can get the prediction for a datapoint of your choice using ``` predict_tree() ``` :
-  
+
 → checking for the properties the CART algorithm used:
   
   ```
@@ -56,9 +57,7 @@ After that you can get the prediction for a datapoint of your choice using ``` p
   #> [9] "Year_Remod_Add" "Mas_Vnr_Area"   "Lot_Area"       "Fireplaces"     "Open_Porch_SF"  "Latitude"       "Lot_Frontage"   "Bsmt_Unf_SF"   
   #> [17] "Bsmt_Full_Bath" "Bedroom_AbvGr"  "Second_Flr_SF"  "Longitude"
   ```
-  
-  
-  
+
 → creating a datpoint with the same properties:
   
   ```
@@ -85,35 +84,71 @@ After that you can get the prediction for a datapoint of your choice using ``` p
     Longitude       = -93.62
   )
   ```
-  
-  
-  
 
-→ getting a prediction for the entered values:
+→ getting a prediction of the target variable for the entered values:
   
   ```
   predict_cart(cart, datapoint)
 
   #> [1] 181000
-  
-  
-  
-  
-  
-  test_results <- test_cart( tree = cart,
-                             dataPoints = ames[2900:2930,],
-                             mode = "regression",
-                             target = "Sale_Price")
-
-  printing + plotting results
-  show_results(test_results)
-
   ```
+<br> 
+You can also check how well your CART generally predicts the target variable by using ```test_cart() ``` with existing data points from your dataset:
+
+→ checking how well the CART performs:
+
+```
+test_results <- test_cart(tree = cart,
+                          dataPoints = ames[2900:2930,],
+                          mode = "regression",
+                          target = "Sale_Price")
+```
+→ the results are presented as the percentage difference between the predicted and the actual value of the target variable:
+
+```
+show_results(test_results)
+#>          max         min        mean      median 
+#>  163.8036810   0.8823529  28.3260395  22.5000000
+
+```
+
+### Cost-complexyity pruning
+
+If the CART was generated using many data points with numerous features, the function ````prune_tree()```` can be used afterwards to reduce the size:
+
+→ number of nodes in the original tree:
+```
+count_nodes(cart)
+#> [1] 199
+```
+→ cost-complexity pruning:
+```
+pruned_cart <- prune_tree(cart)
+```
+→ number of nodes in the pruned tree:
+```
+plot_cart_tree(pruned_cart$optimal_tree)
+count_nodes(pruned_cart$optimal_tree)
+#> [1] 45
+```
+<br>
+However, this can slightly reduce the accuracy of the predictions:
+```
+test_results <- test_cart(tree = pruned_cart$optimal_tree,
+                          dataPoints = ames[2900:2930,],
+                          mode = "regression",
+                          target = "Sale_Price")
+
+show_results(test_results)
+#>        max        min       mean     median 
+#> 163.803681   3.649273  30.411703  23.562992 
+```
+
+### Bagging
 
 
 
 
-  
 
   
  
