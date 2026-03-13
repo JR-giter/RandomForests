@@ -247,3 +247,56 @@ predict_rf <- function(rf_model, newData) {
     return(final_labels)
   }
 }
+
+#' Test and Evaluate Random Forest Performance
+#'
+#' @param rf_model The trained model from random_forest()
+#' @param test_data Dataframe containing the test features and target
+#' @return A dataframe with actuals, predictions, and error metrics
+test_rf <- function(rf_model, test_data) {
+  # 1. Extract the actual values
+  y_actual <- test_data[[rf_model$target]]
+
+  # 2. Get predictions using your existing predict_rf function
+  preds <- predict_rf(rf_model, test_data)
+
+  if (rf_model$mode == "regression") {
+    # Calculate Percentage Error (Delta) as requested in your example
+    # Note: added a small constant to denominator if y is 0 to avoid Inf
+    delta <- abs(y_actual - preds) / (y_actual + 1e-10) * 100
+
+    result <- data.frame(
+      actual = y_actual,
+      prediction = preds,
+      delta_percent = delta
+    )
+
+    # Optional: Print summary metrics to console
+    mae <- mean(abs(y_actual - preds))
+    rmse <- sqrt(mean((y_actual - preds)^2))
+    cat(paste0("\n--- Regression Results ---\nMAE: ", round(mae, 4),
+               "\nRMSE: ", round(rmse, 4), "\nMAPE: ", round(mean(delta), 2), "%\n"))
+
+    return(result)
+
+  } else {
+    # Classification Mode
+    is_correct <- y_actual == preds
+
+    result <- data.frame(
+      actual = y_actual,
+      prediction = preds,
+      correct = is_correct
+    )
+
+    # Summary Metrics
+    accuracy <- mean(is_correct) * 100
+    cat(paste0("\n--- Classification Results ---\nAccuracy: ",
+               round(accuracy, 2), "%\n"))
+
+    # Print Confusion Matrix
+    print(table(Actual = y_actual, Predicted = preds))
+
+    return(result)
+  }
+}

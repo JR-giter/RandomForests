@@ -9,10 +9,10 @@ get_model_features(model_obj)
 \arguments{
 \item{model_obj}{A model object or tree structure. This can be:
 \itemize{
-  \item A **Random Forest/Bagging** object (list containing a \code{trees} element).
-  \item A **Pruned CART** object (list containing an \code{optimal_tree} element).
-  \item A **List** of tree environments.
-  \item A **Single** tree environment.
+  \item A Random Forest/Bagging object (list containing a \code{trees} element).
+  \item A Pruned CART object (list containing an \code{optimal_tree} element).
+  \item A List of tree environments.
+  \item A Single tree environment.
 }}
 }
 \value{
