@@ -99,3 +99,38 @@ test_bagging <- function(models, dataPoints, mode, target) {
     return(result)
   }
 }
+
+#' Predict with Bagging Models
+#' @param models bagging models
+#' @param dataPoints dataset with one or multiple rows
+#' @param mode regression or classification
+#' @return vector of predictions
+#' @export
+predict_bagging <- function(models, dataPoints, mode) {
+
+  # Extract features used by the first tree
+  X <- as.matrix(dataPoints[, models[[1]]$properties, drop = FALSE])
+
+  # Prediction matrix
+  pred_matrix <- matrix(NA, nrow = nrow(X), ncol = length(models))
+
+  for (i in seq_along(models)) {
+    tree <- models[[i]]
+    pred_matrix[, i] <- apply(X, 1, function(row) predict_cart(tree, row))
+  }
+
+  # REGRESSION
+  if (mode == "regression") {
+    preds <- rowMeans(pred_matrix)
+    return(preds)
+  }
+
+  # CLASSIFICATION (majority vote)
+  if (mode == "classification") {
+    preds <- apply(pred_matrix, 1, function(row) {
+      names(sort(table(row), decreasing = TRUE))[1]
+    })
+    return(preds)
+  }
+
+}
