@@ -144,6 +144,35 @@ test_cart <- function(tree, dataPoints, mode = "regression", target) {
   return(result)
 }
 
+get_all_used_features <- function(node, master_properties = NULL) {
+  # 1. Initialization: If we're at the root, capture the master properties list
+  if (is.null(master_properties)) {
+    master_properties <- node$properties
+  }
+
+  # 2. Base Case: If the node is NULL or a leaf (no split feature), stop here
+  if (is.null(node) || is.null(node$split_feature_j)) {
+    return(character(0))
+  }
+
+  # 3. Lookup: Map the index 'j' to the actual name using the master list
+  # If split_feature_j is already the name (string), this still works.
+  current_feature <- master_properties[node$split_feature_j]
+
+  # 4. Recursion: Pass the master_properties down to the children
+  left_side  <- get_all_used_features(node$left_child, master_properties)
+  right_side <- get_all_used_features(node$right_child, master_properties)
+
+  # 5. Combine and remove duplicates
+  return(unique(c(current_feature, left_side, right_side)))
+}
+
+
+
+
+
+
+
 # =============================================================
 # Tree Structure
 # =============================================================
@@ -388,4 +417,31 @@ greedy_cart_classification <- function(input_data, target_variable) {
   }
 
   return(root)
+}
+
+#=============================================================
+# Counting the nodes of a CART
+#=============================================================
+
+#' Count the number of nodes in a CART tree
+#'
+#' This function recursively counts all nodes in a CART tree
+#' created with \code{generate_cart_tree()}. It works for both
+#' regression and classification trees.
+#'
+#' @param node A CART tree node (usually the root) as returned by
+#' \code{generate_cart_tree()}.
+#'
+#' @return An integer giving the total number of nodes in the tree.
+#' @export
+count_nodes <- function(node) {
+  if (is.null(node)) return(0)
+  1 + count_nodes(node$left_child) + count_nodes(node$right_child)
+}
+count_nodes <- function(node) {
+  if (is.null(node)) return(0)
+
+  return(
+    1 + count_nodes(node$left_child) + count_nodes(node$right_child)
+  )
 }
