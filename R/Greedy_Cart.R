@@ -3,7 +3,7 @@
 # Use of Greedy Cart
 # =============================================================
 
-# prepares data before using
+# prepare data for greedy cart
 prepare_data <- function(dataSet, properties, target, filter_mode = "numeric"){
 
   # filters out non-numeric properties if "filter_mode" -> numeric
@@ -54,8 +54,37 @@ prepare_data <- function(dataSet, properties, target, filter_mode = "numeric"){
 }
 
 
-
-# generating a greedy Cart Tree
+#' Generate a Greedy CART Tree
+#'
+#' This function constructs a greedy CART tree for regression or classification.
+#' It filters and selects properties, converts the data to matrix form,
+#' and delegates the actual tree construction to the appropriate CART algorithm.
+#'
+#' @param dataSet dataset
+#' @param properties Property selection passed to prepare_data():
+#'   * numeric scalar → select top-n rated properties
+#'   * numeric vector → column indices
+#'   * character vector → column names
+#' @param n_nodes Number of rows from the dataset to use for tree construction.
+#' @param mode Either "regression" or "classification".
+#' @param target Name of the target column.
+#'
+#' @return A list representing the CART tree, containing:
+#'   * split information
+#'   * predictions
+#'   * selected properties
+#'   * X (training matrix)
+#'   * y (target vector)
+#'
+#' @examples
+#' generate_cart_tree(
+#'   dataSet = ames,
+#'   properties = 5,
+#'   n_nodes = 100,
+#'   mode = "regression",
+#'   target = "Sale_Price"
+#' )
+#' @export
 generate_cart_tree <-  function(dataSet, properties, n_nodes, mode, target){
 
   # get the Data-set as DataFrame
@@ -96,6 +125,19 @@ generate_cart_tree <-  function(dataSet, properties, n_nodes, mode, target){
 
 
 # finding prediction result for single "dataPoint" inside "tree"
+#' Predict a single data point using a CART tree
+#'
+#' This function traverses a CART tree from the root to a leaf node based on
+#' the split rules and returns the predicted value or class for one observation.
+#'
+#' @param tree A CART tree structure.
+#' @param dataPoint A named numeric vector representing one observation.
+#'
+#' @return The predicted value or class.
+#'
+#' @examples
+#' predict_cart( tree = cart_tree, dataPoint = ames[2900,])
+#' @export
 predict_cart <- function(tree, dataPoint) {
   node <- tree
 
@@ -115,6 +157,35 @@ predict_cart <- function(tree, dataPoint) {
 }
 
 # testing  a cart tree on a number of input dataPoints
+#' Test a CART tree on multiple data points
+#'
+#' This function evaluates a CART tree on a given test dataset. It computes
+#' predictions for each observation and returns a data.frame containing the
+#' actual and predicted values. For regression, percentage error is included.
+#' For classification, accuracy and a confusion matrix are attached as attributes.
+#'
+#' @param tree A CART tree structure.
+#' @param dataPoints A data.frame of test observations.
+#' @param mode Either "regression" or "classification".
+#' @param target Name of the target column.
+#'
+#' @return A data.frame containing:
+#'   * actual: true values
+#'   * prediction: predicted values
+#'   * delta (regression only)
+#'
+#' For classification, the result has attributes:
+#'   * accuracy
+#'   * confusion_matrix
+#'
+#' @examples
+#' test_cart(
+#'   tree = cart_tree,
+#'   dataPoints = ames[2900:2930, ],
+#'   mode = "regression",
+#'   target = "Sale_Price"
+#' )
+#' @export
 test_cart <- function(tree, dataPoints, mode = "regression", target) {
 
   # filtering out only necessary properties
@@ -315,7 +386,7 @@ greedy_cart_classification <- function(input_data, target_variable) {
       for (j in 1:d) {
 
         current_feature <- indices_data[, j]
-        vals <- sort(current_feature)
+        vals <- sort(unique(current_feature))
 
         # split point calculation
         split_points <- (vals[-1] + vals[-length(vals)]) / 2
