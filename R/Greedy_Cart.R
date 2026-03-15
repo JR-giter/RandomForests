@@ -140,6 +140,7 @@ generate_cart_tree <-  function(dataSet, properties, n_nodes, mode, target){
 #' @export
 predict_cart <- function(tree, dataPoint) {
   node <- tree
+  dataPoint <- as.vector(dataPoint)
 
   while(!(is.null(node$split_feature_j))) {
 

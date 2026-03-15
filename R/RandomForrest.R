@@ -254,30 +254,20 @@ predict_rf <- function(rf_model, newData) {
 #' @param test_data Dataframe containing the test features and target
 #' @return A dataframe with actuals, predictions, and error metrics
 test_rf <- function(rf_model, test_data) {
-  # 1. Extract the actual values
   y_actual <- test_data[[rf_model$target]]
 
-  # 2. Get predictions using your existing predict_rf function
   preds <- predict_rf(rf_model, test_data)
 
   if (rf_model$mode == "regression") {
-    # Calculate Percentage Error (Delta) as requested in your example
-    # Note: added a small constant to denominator if y is 0 to avoid Inf
     delta <- abs(y_actual - preds) / (y_actual + 1e-10) * 100
 
-    result <- data.frame(
-      actual = y_actual,
-      prediction = preds,
-      delta_percent = delta
+    summary_stats <- c(
+      max    = max(delta, na.rm = TRUE),
+      min    = min(delta, na.rm = TRUE),
+      mean   = mean(delta, na.rm = TRUE),
+      median = median(delta, na.rm = TRUE)
     )
-
-    # Optional: Print summary metrics to console
-    mae <- mean(abs(y_actual - preds))
-    rmse <- sqrt(mean((y_actual - preds)^2))
-    cat(paste0("\n--- Regression Results ---\nMAE: ", round(mae, 4),
-               "\nRMSE: ", round(rmse, 4), "\nMAPE: ", round(mean(delta), 2), "%\n"))
-
-    return(result)
+    return(summary_stats)
 
   } else {
     # Classification Mode
