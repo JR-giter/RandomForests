@@ -281,6 +281,8 @@ test_rf <- function(rf_model, test_data) {
 
     # Summary Metrics
     accuracy <- mean(is_correct) * 100
+    attr(result, "accuracy") <- accuracy
+
     cat(paste0("\n--- Classification Results ---\nAccuracy: ",
                round(accuracy, 2), "%\n"))
 

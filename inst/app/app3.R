@@ -134,7 +134,7 @@ server <- function(input, output, session) {
   # --- 2. RUN MODEL ---
   observeEvent(input$run_model, {
     data_df <- get(input$dataset)
-    test_data <- data_df[(nrow(data_df) - 29):nrow(data_df), ]
+    test_data <- data_df[2900:2930, ]
     res_model <- NULL
     results <- NULL
 
@@ -184,19 +184,34 @@ server <- function(input, output, session) {
     })
   })
 
-  # --- 3. DYNAMIC INPUTS ---
+  # --- 3. DYNAMIC INPUTS ---                     #Falls gewollte standard werte erstellt werden sollen, hier anpassen
+#  output$dynamic_inputs <- renderUI({
+#    req(active_features())
+#    feats <- active_features()
+#    data_df <- get(input$dataset)
+#
+#    fluidRow(
+#      lapply(feats, function(f) {
+#        avg_val <- if(is.numeric(data_df[[f]])) round(mean(data_df[[f]], na.rm=T), 1) else 0
+#        column(3, numericInput(paste0("pred_", f), label = f, value = avg_val))
+#      })
+#    )
+#  })
   output$dynamic_inputs <- renderUI({
     req(active_features())
     feats <- active_features()
-    data_df <- get(input$dataset)
 
     fluidRow(
       lapply(feats, function(f) {
-        avg_val <- if(is.numeric(data_df[[f]])) round(mean(data_df[[f]], na.rm=T), 1) else 0
-        column(3, numericInput(paste0("pred_", f), label = f, value = avg_val))
+        column(3, numericInput(
+          inputId = paste0("pred_", f),
+          label   = f,
+          value   = NULL   # <-- Feld bleibt leer
+        ))
       })
     )
   })
+
 
   # --- 3. PREDICTION ENGINE ---
   output$prediction_output <- renderText({
@@ -204,13 +219,16 @@ server <- function(input, output, session) {
     model <- trained_model()
 
     # Correctly identify properties for the input vector
-    props <- if(!is.null(model$trees)) {
+    props <- if (!is.null(model$trees)) {
       model$trees[[1]]$feature_names
-    } else if(is.environment(model)) {
+    } else if (is.list(model) && is.environment(model[[1]])) {
+      model[[1]]$properties
+    } else if (is.environment(model)) {
       model$properties
     } else {
       model$properties
     }
+
 
     input_vals <- sapply(props, function(p) {
       val <- input[[paste0("pred_", p)]]
@@ -223,14 +241,17 @@ server <- function(input, output, session) {
 
       } else if (input$model_choice == "Bagging") {
 
-        preds <- sapply(model, function(t) predict_cart(t, input_vals))
+        preds <- sapply(model, function(t) {
+          p <- predict_cart(t, input_vals)
+          if (input$mode == "classification") as.character(p) else p
+        })
 
         if (input$mode == "regression") {
           res <- mean(as.numeric(preds))
         } else {
-          # Mehrheitsvoting
           res <- names(sort(table(preds), decreasing = TRUE))[1]
         }
+
 
       } else if (input$model_choice == "Random Forest") {
         df_row <- as.data.frame(t(input_vals))
