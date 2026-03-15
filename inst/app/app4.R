@@ -310,14 +310,24 @@ server <- function(input, output, session) {
         mode   = input$mode
       )
 
-      preds <- predict_rf(res_model, test_data)
-      actual_vals <- test_data[[input$target]]
+      if (input$mode == "regression") {
 
-      results <- data.frame(
-        actual     = actual_vals,
-        prediction = preds,
-        delta      = (abs(actual_vals - as.numeric(preds)) / actual_vals) * 100
-      )
+        preds <- predict_rf(res_model, test_data)
+        actual_vals <- test_data[[input$target]]
+
+        results <- data.frame(
+          actual     = actual_vals,
+          prediction = preds,
+          delta      = (abs(actual_vals - as.numeric(preds)) / actual_vals) * 100
+        )
+
+      } else {
+
+        # Classification → test_rf benutzen
+        results <- test_rf(res_model, test_data)
+
+      }
+
     }
 
     # save Model
@@ -345,6 +355,7 @@ server <- function(input, output, session) {
       } else {
         cat("Accuracy: ", attr(results, "accuracy"))
       }
+
     })
 
     # render Results Block

@@ -1,7 +1,7 @@
 ---
 title: "Introduction to the package Random Forests"
 author: Alexander Kolb, Joel Reiß, Nils Blum, Luke Böhler
-date: (to do)
+date: 15.03.2026
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction to the package Random Forests}
@@ -203,3 +203,4 @@ test_rf(randomforest, ames[500:1000, ])
 
 #>          max          min         mean       median 
 #> 226.44126074   0.04279835  20.06655144  11.62264789
+```
