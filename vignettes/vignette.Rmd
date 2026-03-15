@@ -34,6 +34,50 @@ library(AmesHousing)
 ames <- make_ames() # get dataset
 ```
 
+The following datapoint will additionally serve as input for the subsequent prediction functions:
+
+```
+datapoint <- data.frame(
+  Gr_Liv_Area       = 1710,
+  Garage_Cars       = 2,
+  Garage_Area       = 548,
+  Total_Bsmt_SF     = 856,
+  First_Flr_SF      = 856,
+  Second_Flr_SF     = 854,
+  TotRms_AbvGrd     = 8,
+  Year_Built        = 2003,
+  Year_Remod_Add    = 2003,
+  Mas_Vnr_Area      = 196,
+  Lot_Area          = 8450,
+  Fireplaces        = 0,
+  Open_Porch_SF     = 61,
+  Enclosed_Porch    = 120,
+  Three_season_porch= 0,
+  Screen_Porch      = 80,
+  Pool_Area         = 0,
+  Wood_Deck_SF      = 0,
+  Bsmt_Unf_SF       = 150,
+  BsmtFin_SF_1      = 706,
+  BsmtFin_SF_2      = 0,
+  Bsmt_Full_Bath    = 1,
+  Bsmt_Half_Bath    = 1,
+  Full_Bath         = 2,
+  Half_Bath         = 1,
+  Bedroom_AbvGr     = 3,
+  Kitchen_AbvGr     = 1,
+  Lot_Frontage      = 65,
+  Mo_Sold           = 2,
+  Year_Sold         = 2008,
+  Latitude          = 42.03,
+  Longitude         = -93.62,
+  Sale_Price        = 208500,
+  Misc_Val          = 0,
+  Low_Qual_Fin_SF   = 0
+);
+```
+Note: The datapoint you choose for predictions must at least contain the features used by the corresponding algorithms. You can check which features have been used with get_model_features(cart/bagging_trees,random_forest).
+
+
 ### Creating a decision tree for regression or classification
 
 To generate a classification-and-regression-tree (CART) on a given dataset you use the function  ``` generate_cart_tree()  ```:
@@ -47,51 +91,10 @@ cart <- generate_cart_tree( dataSet = ames,
 ```
 <br>
 After that you can get the prediction for a datapoint of your choice using ``` predict_tree() ``` :
-
-→ checking for the properties the CART algorithm used:
-  
-  ```
-  cart$properties
-
-  #> [1] "Gr_Liv_Area"    "Garage_Cars"    "Garage_Area"    "Total_Bsmt_SF"  "First_Flr_SF"  "TotRms_AbvGrd"  "Year_Built"     "Full_Bath"     
-  #> [9] "Year_Remod_Add" "Mas_Vnr_Area"   "Lot_Area"       "Fireplaces"     "Open_Porch_SF"  "Latitude"       "Lot_Frontage"   "Bsmt_Unf_SF"   
-  #> [17] "Bsmt_Full_Bath" "Bedroom_AbvGr"  "Second_Flr_SF"  "Longitude"
-  ```
-
-→ creating a datpoint with the same properties:
-  
-  ```
-  datapoint <- data.frame(
-    Gr_Liv_Area     = 1600,
-    Garage_Cars     = 2,
-    Garage_Area     = 500,
-    Total_Bsmt_SF   = 1100,
-    First_Flr_SF    = 1200,
-    TotRms_AbvGrd   = 7,
-    Year_Built      = 1995,
-    Full_Bath       = 2,
-    Year_Remod_Add  = 2005,
-    Mas_Vnr_Area    = 150,
-    Lot_Area        = 8000,
-    Fireplaces      = 1,
-    Open_Porch_SF   = 120,
-    Latitude        = 42.01,
-    Lot_Frontage    = 60,
-    Bsmt_Unf_SF     = 300,
-    Bsmt_Full_Bath  = 1,
-    Bedroom_AbvGr   = 3,
-    Second_Flr_SF   = 400,
-    Longitude       = -93.62
-  )
-  ```
-
-→ getting a prediction of the target variable for the entered values:
-  
-  ```
-  predict_cart(cart, datapoint)
-
-  #> [1] 181000
-  ```
+```
+predict_cart(cart, datapoint)
+# [1] 146000
+```
 <br> 
 You can also check how well your CART generally predicts the target variable by using ```test_cart() ``` with existing data points from your dataset:
 
@@ -99,7 +102,7 @@ You can also check how well your CART generally predicts the target variable by 
 
 ```
 test_results <- test_cart(tree = cart,
-                          dataPoints = ames[2900:2930,],
+                          dataPoints = ames[500:1000,],
                           mode = "regression",
                           target = "Sale_Price")
 ```
@@ -107,8 +110,8 @@ test_results <- test_cart(tree = cart,
 
 ```
 show_results(test_results)
-#>          max         min        mean      median 
-#>  163.8036810   0.8823529  28.3260395  22.5000000
+#>       max       min      mean    median 
+#> 258.16619   0.00000  24.23485  15.04425 
 
 ```
 
@@ -127,7 +130,6 @@ pruned_cart <- prune_tree(cart)
 ```
 → number of nodes in the pruned tree:
 ```
-plot_cart_tree(pruned_cart$optimal_tree)
 count_nodes(pruned_cart$optimal_tree)
 #> [1] 45
 ```
@@ -135,32 +137,69 @@ count_nodes(pruned_cart$optimal_tree)
 However, this can slightly reduce the accuracy of the predictions:
 ```
 test_results <- test_cart(tree = pruned_cart$optimal_tree,
-                          dataPoints = ames[2900:2930,],
+                          dataPoints = ames[500:1000,],
                           mode = "regression",
                           target = "Sale_Price")
 
 show_results(test_results)
-#>        max        min       mean     median 
-#> 163.803681   3.649273  30.411703  23.562992 
+#>          max          min         mean       median 
+#> 229.89493792   0.05057284  26.03053878  15.71189280 
+
 ```
 
 ### Bagging
 
+To further improve prediction performance, the bagging algorithm can be applied, generating multiple bootstrap datasets that are used to train several decision trees. To do this, simply use the function bagging_greedycart():
+
+```
+bagging_trees <- bagging_greedycart(data = ames,
+                                    n_bootstrapSamples = 20,
+                                    properties = 20,
+                                    n_nodes = 200,
+                                    mode = "regression",
+                                    target = "Sale_Price")
+```
+<br>
+Now you can get a prediction for your datapoint with predict_bagging():
+```
+predict_bagging(bagging_trees, datapoint, mode = "regression")
+#> [1] 188948
+```
+<br>
+You can also run a test here to evaluate the overall performance of the bagging model:
+```
+test_results <- test_bagging(models = bagging_trees,
+                             dataPoints = ames[500:1000,],
+                             mode = "regression",
+                             target = "Sale_Price")
 
 
+show_results(test_results)
+#>          max          min         mean       median 
+#> 219.32822350   0.04685315  20.92268138  14.17593540 
+```
 
+### Random Forests
+Building upon the bagging approach, the Random Forest algorithm further improves prediction performance by introducing randomness in the selection of features for each split. You can use random_forest() to generate such a forest:
+```
+randomforest <- random_forest(
+    data = ames[1:100, ],
+    B = 50,
+    m = 8,
+    target = "Sale_Price",
+    mode = "regression"
+)
+```
+<br>
+As with the previous functions, you can obtain a prediction using predict_rf():
+```
+predict_rf(randomforest,datapoint)
+#> [1] 196310
+```
+<br>
+The predictive performance of the random forest can also be measured using a test:
+```
+test_rf(randomforest, ames[500:1000, ])
 
-  
- 
-
-
-
-
-
-
-
-
-
-
-
-
+#>          max          min         mean       median 
+#> 226.44126074   0.04279835  20.06655144  11.62264789
