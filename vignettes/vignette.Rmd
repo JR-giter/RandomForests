@@ -203,3 +203,4 @@ test_rf(randomforest, ames[500:1000, ])
 
 #>          max          min         mean       median 
 #> 226.44126074   0.04279835  20.06655144  11.62264789
+
