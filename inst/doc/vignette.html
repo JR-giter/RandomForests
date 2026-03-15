@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Alexander Kolb, Joel Reiß, Nils Blum, Luke Böhler" />
+
+
+<title>Introduction to the package Random Forests</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction to the package Random
+Forests</h1>
+<h4 class="author">Alexander Kolb, Joel Reiß, Nils Blum, Luke
+Böhler</h4>
+<h4 class="date">(to do)</h4>
+
+
+
+<p>This vignette will show you how to work with the package in the
+following steps:</p>
+<ul>
+<li><p>Creating a decision tree for regression or
+classification</p></li>
+<li><p>Applying cost-complexity pruning to a previously generated tree
+in order to reduce its size and avoid overfitting</p></li>
+<li><p>Using the bagging algorithm to generate multiple bootstrap
+datasets and corresponding trees for improved predictions</p></li>
+<li><p>Using the random forest algorithm to generate a diverse ensemble
+of trees to get better predictions</p></li>
+</ul>
+<p>To illustrate the functionality, we will use the Ames Housing dataset
+throughout the examples.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(RandomForests)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(AmesHousing)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co">#&gt; Warning: Paket &#39;AmesHousing&#39; wurde unter R Version 4.5.2 erstellt</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>ames <span class="ot">&lt;-</span> <span class="fu">make_ames</span>() <span class="co"># get dataset</span></span></code></pre></div>
+<p>The following datapoint will additionally serve as input for the
+subsequent prediction functions:</p>
+<pre><code>datapoint &lt;- data.frame(
+  Gr_Liv_Area       = 1710,
+  Garage_Cars       = 2,
+  Garage_Area       = 548,
+  Total_Bsmt_SF     = 856,
+  First_Flr_SF      = 856,
+  Second_Flr_SF     = 854,
+  TotRms_AbvGrd     = 8,
+  Year_Built        = 2003,
+  Year_Remod_Add    = 2003,
+  Mas_Vnr_Area      = 196,
+  Lot_Area          = 8450,
+  Fireplaces        = 0,
+  Open_Porch_SF     = 61,
+  Enclosed_Porch    = 120,
+  Three_season_porch= 0,
+  Screen_Porch      = 80,
+  Pool_Area         = 0,
+  Wood_Deck_SF      = 0,
+  Bsmt_Unf_SF       = 150,
+  BsmtFin_SF_1      = 706,
+  BsmtFin_SF_2      = 0,
+  Bsmt_Full_Bath    = 1,
+  Bsmt_Half_Bath    = 1,
+  Full_Bath         = 2,
+  Half_Bath         = 1,
+  Bedroom_AbvGr     = 3,
+  Kitchen_AbvGr     = 1,
+  Lot_Frontage      = 65,
+  Mo_Sold           = 2,
+  Year_Sold         = 2008,
+  Latitude          = 42.03,
+  Longitude         = -93.62,
+  Sale_Price        = 208500,
+  Misc_Val          = 0,
+  Low_Qual_Fin_SF   = 0
+);</code></pre>
+<p>Note: The datapoint you choose for predictions must at least contain
+the features used by the corresponding algorithms. You can check which
+features have been used with
+get_model_features(cart/bagging_trees,random_forest).</p>
+<div id="creating-a-decision-tree-for-regression-or-classification" class="section level3">
+<h3>Creating a decision tree for regression or classification</h3>
+<p>To generate a classification-and-regression-tree (CART) on a given
+dataset you use the function <code>generate_cart_tree()</code>:</p>
+<pre><code>cart &lt;- generate_cart_tree( dataSet = ames,
+                            properties = 20,
+                            n_nodes = 100,
+                            mode = &quot;regression&quot;,
+                            target = &quot;Sale_Price&quot;)</code></pre>
+<p><br> After that you can get the prediction for a datapoint of your
+choice using <code>predict_tree()</code> :</p>
+<pre><code>predict_cart(cart, datapoint)
+# [1] 146000</code></pre>
+<p><br> You can also check how well your CART generally predicts the
+target variable by using <code>test_cart()</code> with existing data
+points from your dataset:</p>
+<p>→ checking how well the CART performs:</p>
+<pre><code>test_results &lt;- test_cart(tree = cart,
+                          dataPoints = ames[500:1000,],
+                          mode = &quot;regression&quot;,
+                          target = &quot;Sale_Price&quot;)</code></pre>
+<p>→ the results are presented as the percentage difference between the
+predicted and the actual value of the target variable:</p>
+<pre><code>show_results(test_results)
+#&gt;       max       min      mean    median 
+#&gt; 258.16619   0.00000  24.23485  15.04425 
+</code></pre>
+</div>
+<div id="cost-complexyity-pruning" class="section level3">
+<h3>Cost-complexyity pruning</h3>
+<p>If the CART was generated using many data points with numerous
+features, the function <code>prune_tree()</code> can be used afterwards
+to reduce the size:</p>
+<p>→ number of nodes in the original tree:</p>
+<pre><code>count_nodes(cart)
+#&gt; [1] 199</code></pre>
+<p>→ cost-complexity pruning:</p>
+<pre><code>pruned_cart &lt;- prune_tree(cart)</code></pre>
+<p>→ number of nodes in the pruned tree:</p>
+<pre><code>count_nodes(pruned_cart$optimal_tree)
+#&gt; [1] 45</code></pre>
+<p><br> However, this can slightly reduce the accuracy of the
+predictions:</p>
+<pre><code>test_results &lt;- test_cart(tree = pruned_cart$optimal_tree,
+                          dataPoints = ames[500:1000,],
+                          mode = &quot;regression&quot;,
+                          target = &quot;Sale_Price&quot;)
+
+show_results(test_results)
+#&gt;          max          min         mean       median 
+#&gt; 229.89493792   0.05057284  26.03053878  15.71189280 
+</code></pre>
+</div>
+<div id="bagging" class="section level3">
+<h3>Bagging</h3>
+<p>To further improve prediction performance, the bagging algorithm can
+be applied, generating multiple bootstrap datasets that are used to
+train several decision trees. To do this, simply use the function
+bagging_greedycart():</p>
+<pre><code>bagging_trees &lt;- bagging_greedycart(data = ames,
+                                    n_bootstrapSamples = 20,
+                                    properties = 20,
+                                    n_nodes = 200,
+                                    mode = &quot;regression&quot;,
+                                    target = &quot;Sale_Price&quot;)</code></pre>
+<p><br> Now you can get a prediction for your datapoint with
+predict_bagging():</p>
+<pre><code>predict_bagging(bagging_trees, datapoint, mode = &quot;regression&quot;)
+#&gt; [1] 188948</code></pre>
+<p><br> You can also run a test here to evaluate the overall performance
+of the bagging model:</p>
+<pre><code>test_results &lt;- test_bagging(models = bagging_trees,
+                             dataPoints = ames[500:1000,],
+                             mode = &quot;regression&quot;,
+                             target = &quot;Sale_Price&quot;)
+
+
+show_results(test_results)
+#&gt;          max          min         mean       median 
+#&gt; 219.32822350   0.04685315  20.92268138  14.17593540 </code></pre>
+</div>
+<div id="random-forests" class="section level3">
+<h3>Random Forests</h3>
+<p>Building upon the bagging approach, the Random Forest algorithm
+further improves prediction performance by introducing randomness in the
+selection of features for each split. You can use random_forest() to
+generate such a forest:</p>
+<pre><code>randomforest &lt;- random_forest(
+    data = ames[1:100, ],
+    B = 50,
+    m = 8,
+    target = &quot;Sale_Price&quot;,
+    mode = &quot;regression&quot;
+)</code></pre>
+<p><br> As with the previous functions, you can obtain a prediction
+using predict_rf():</p>
+<pre><code>predict_rf(randomforest,datapoint)
+#&gt; [1] 196310</code></pre>
+<p><br> The predictive performance of the random forest can also be
+measured using a test: ``` test_rf(randomforest, ames[500:1000, ])</p>
+<p>#&gt; max min mean median #&gt; 226.44126074 0.04279835 20.06655144
+11.62264789</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
