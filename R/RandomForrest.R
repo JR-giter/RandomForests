@@ -253,6 +253,7 @@ predict_rf <- function(rf_model, newData) {
 #' @param rf_model The trained model from random_forest()
 #' @param test_data Dataframe containing the test features and target
 #' @return A dataframe with actuals, predictions, and error metrics
+#' @export
 test_rf <- function(rf_model, test_data) {
   y_actual <- test_data[[rf_model$target]]
 
