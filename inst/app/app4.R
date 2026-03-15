@@ -6,48 +6,6 @@ library(RandomForests)
 library(shiny)
 library(shinyjs)
 
-
-# ==========================================================
-# UITILITY FUNCTION
-# ==========================================================
-
-get_model_features <- function(model_obj) {
-  get_names <- function(node) {
-    if (!is.null(node$feature_names)) return(node$feature_names)
-    if (!is.null(node$properties)) return(node$properties)
-    return(NULL)
-  }
-
-  crawl_tree <- function(node, master_names) {
-    current_dict <- get_names(node)
-    if (!is.null(current_dict)) master_names <- current_dict
-    if (is.null(node) || is.null(node$split_feature_j)) return(character(0))
-    if (is.null(master_names)) return(character(0))
-
-    current_feat <- master_names[node$split_feature_j]
-    left  <- crawl_tree(node$left_child, master_names)
-    right <- crawl_tree(node$right_child, master_names)
-    return(c(current_feat, left, right))
-  }
-
-  all_found <- NULL
-  if (is.list(model_obj) && !is.null(model_obj$trees)) {
-    initial_names <- get_names(model_obj$trees[[1]])
-    all_found <- unlist(lapply(model_obj$trees, crawl_tree, master_names = initial_names))
-  } else if (is.list(model_obj) && !is.null(model_obj$optimal_tree)) {
-    all_found <- crawl_tree(model_obj$optimal_tree, get_names(model_obj$optimal_tree))
-  } else if (is.list(model_obj) && length(model_obj) > 0 && is.environment(model_obj[[1]])) {
-    all_found <- unlist(lapply(model_obj, function(t) crawl_tree(t, get_names(t))))
-  } else if (is.environment(model_obj)) {
-    all_found <- crawl_tree(model_obj, get_names(model_obj))
-  }
-
-  result <- sort(unique(as.character(all_found[!is.na(all_found) & all_found != ""])))
-  return(result)
-}
-
-
-
 # ==========================================================
 # UI
 # ==========================================================
@@ -144,7 +102,7 @@ ui <- fluidPage(
                               tags$label("Training Samples:"),
                               tags$small("Zeilen für Baumaufbau")
                           ),
-                          numericInput("nodes", NULL, 100)
+                          numericInput("nodes", NULL, 100, min = 5)
                    ),
 
                    # Properties
@@ -153,7 +111,7 @@ ui <- fluidPage(
                               tags$label("Properties:"),
                               tags$small("Top‑k Features")
                           ),
-                          numericInput("properties", NULL, 5)
+                          numericInput("properties", NULL, 5, min = 1)
                    )
                  ),
 
@@ -169,7 +127,7 @@ ui <- fluidPage(
                        tags$label("Bootstrap Samples:"),
                        tags$small("Anzahl Bootstrap‑Sets")
                    ),
-                   numericInput("bootstrap", NULL, 20),
+                   numericInput("bootstrap", NULL, 20, min = 1),
                    hr()
                  ),
 
@@ -180,7 +138,7 @@ ui <- fluidPage(
                        tags$label("Tree Count:"),
                        tags$small("Anzahl Bäume")
                    ),
-                   numericInput("treecount", NULL, 50),
+                   numericInput("treecount", NULL, 50, min = 1),
                    hr()
                  ),
 
@@ -195,31 +153,33 @@ ui <- fluidPage(
                  # ------------------------------------------------------
                  # RESULTS
                  # ------------------------------------------------------
-                 uiOutput("results_block")
+                 uiOutput("results_block"),
+
+                 fluidRow(
+                   column(12, wellPanel(
+                     h3("Evaluator"),
+                     uiOutput("dynamic_inputs"),
+                     hr(),
+                     h4("Estimated Value/Class:"),
+                     span(textOutput("prediction_output"),
+                          style="font-size: 28px; color: #2c3e50; font-weight: bold;")
+                   ))
+                 )
+
 
                ))
              )
     ),
 
     # ---------------------------------------------------------
-    # TAB 3: EVALUATOR
+    # TAB 3: Tests
     # ---------------------------------------------------------
-    tabPanel("Evaluator",
-             sidebarLayout(
-               sidebarPanel(
-                 h3("Input Features"),
-                 uiOutput("dynamic_inputs"),
-                 actionButton("predict_button", "Predict", class = "btn-success")
-               ),
-               mainPanel(
-                 h3("Prediction"),
-                 span(textOutput("prediction_output"),
-                      style="font-size: 28px; color: #2c3e50; font-weight: bold;")
-               )
-             )
+
+
+
     )
   )
-)
+
 
 # ==========================================================
 # SERVER
@@ -271,21 +231,6 @@ server <- function(input, output, session) {
   # Initial NULL für aktive Features
   active_features <- reactiveVal(NULL)
 
-  # Dynamische Inputs für manuelle Prediction basierend auf den verwendeten Features des Modells
-  output$dynamic_inputs <- renderUI({
-    req(active_features())
-    feats <- active_features()
-
-    fluidRow(
-      lapply(feats, function(f) {
-        column(3, numericInput(
-          inputId = paste0("pred_", f),
-          label   = f,
-          value   = NULL
-        ))
-      })
-    )
-  })
 
 
 
@@ -298,15 +243,14 @@ server <- function(input, output, session) {
     data_df <- get(input$dataset)
 
     train_data <- data_df[1:input$nodes, ]
-    test_data  <- data_df[2900:2930, ]
+    test_data <- data_df[(nrow(data_df) - 29):nrow(data_df), ]
 
-    # ------------------------------------------------------
-    # 2. Runtime starten
-    # ------------------------------------------------------
+
+    # Runtime starten
     start_time <- proc.time()
 
     # ------------------------------------------------------
-    # 3. Modell abhängig von der Auswahl erzeugen + testen
+    # Modell abhängig von der Auswahl erzeugen + testen
     # ------------------------------------------------------
     res_model <- NULL
     results   <- NULL
@@ -376,20 +320,19 @@ server <- function(input, output, session) {
       )
     }
 
-    # ------------------------------------------------------
-    # 4. Modell speichern
-    # ------------------------------------------------------
+    # save Model
     trained_model(res_model)
     active_features(get_model_features(res_model))
 
-    # ------------------------------------------------------
-    # 5. Runtime stoppen
-    # ------------------------------------------------------
+
+  # ------------------------------------------------------
+  # Metrics Block
+  # ------------------------------------------------------
+
+    # record runtime end
     runtime <- proc.time() - start_time
 
-    # ------------------------------------------------------
-    # 6. Outputs anzeigen
-    # ------------------------------------------------------
+    # get metrics depending on mode
     output$runtime <- renderText({
       paste("Runtime:", round(runtime["elapsed"], 4), "sec")
     })
@@ -404,9 +347,7 @@ server <- function(input, output, session) {
       }
     })
 
-    # ------------------------------------------------------
-    # 7. Results-Block sichtbar machen
-    # ------------------------------------------------------
+    # render Results Block
     output$results_block <- renderUI({
       req(trained_model())   # Nur anzeigen, wenn ein Modell existiert
 
@@ -418,28 +359,121 @@ server <- function(input, output, session) {
         verbatimTextOutput("metrics"),
         hr(),
 
-        # ------------------------------------------------------
-        # MANUAL PREDICTION SECTION
-        # ------------------------------------------------------
-        h4("Manual Prediction"),
-        tags$small("Geben Sie Werte für die verwendeten Features ein"),
-        br(),
-
-        # WICHTIG: dynamic_inputs HIER direkt einfügen
-        uiOutput("dynamic_inputs"),
-
-        br(),
-        actionButton("predict_button", "Predict",
-                     class = "btn-success", width = "100%"),
-
-        br(), br(),
-
-        h4("Prediction Result"),
-        textOutput("prediction_output")
       )
     })
 
   })
+
+  # ------------------------------------------------------
+  # dynamic inputs based on active features of the model
+  # ------------------------------------------------------
+  output$dynamic_inputs <- renderUI({
+    req(trained_model())
+    req(active_features())
+
+    feats <- active_features()
+    data_df <- get(input$dataset)
+
+    fluidRow(
+      lapply(feats, function(f) {
+        avg_val <- if (is.numeric(data_df[[f]]))
+          round(mean(data_df[[f]], na.rm = TRUE), 1)
+        else 0
+
+        column(3, numericInput(
+          inputId = paste0("pred_", f),
+          label   = f,
+          value   = avg_val,
+          min = 0
+        ))
+      })
+    )
+  })
+
+
+  # ------------------------------------------------------
+  # Predictions
+  # ------------------------------------------------------
+  output$prediction_output <- renderText({
+    req(trained_model())
+    req(active_features())
+
+    model <- trained_model()
+    feats <- active_features()
+
+    # Correctly identify properties for the input vector
+    props <- if (!is.null(model$trees)) {
+      model$trees[[1]]$feature_names
+    } else if (is.list(model) && is.environment(model[[1]])) {
+      model[[1]]$properties
+    } else if (is.environment(model)) {
+      model$properties
+    } else {
+      model$properties
+    }
+
+    # Werte aus den Inputs holen
+    input_vals <- sapply(props, function(f) {
+      val <- input[[paste0("pred_", f)]]
+      if (is.null(val)) 0 else val
+    })
+
+    res <- NULL
+
+    tryCatch({
+
+      # GREEDY + PRUNING
+      if (input$model_choice %in% c("Greedy", "Pruning")) {
+        res <- predict_cart(model, input_vals)
+      }
+
+      # BAGGING
+      else if (input$model_choice == "Bagging") {
+
+        preds <- sapply(model, function(tree) {
+          p <- predict_cart(tree, input_vals)
+          if (input$mode == "classification") as.character(p) else p
+        })
+
+        if (input$mode == "regression") {
+          res <- mean(as.numeric(preds))
+        } else {
+          res <- names(sort(table(preds), decreasing = TRUE))[1]
+        }
+      }
+
+      # RANDOM FOREST
+      else if (input$model_choice == "Random Forest") {
+
+        df_row <- as.data.frame(t(input_vals))
+        colnames(df_row) <- props
+
+        res <- predict_rf(model, df_row)
+      }
+
+
+      # FORMATIERUNG
+      if (input$mode == "regression") {
+
+        is_money <- grepl("price|cost|value|sale", tolower(input$target))
+
+        if (is_money) {
+          return(paste0("$", format(round(res, 2), big.mark=",")))
+        } else {
+          return(round(res, 2))
+        }
+      }
+
+      # Classification
+      return(as.character(res))
+
+    }, error = function(e) {
+      return("Ready…")
+    })
+  })
+
+
+
 
 }
 
