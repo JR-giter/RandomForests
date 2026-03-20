@@ -158,3 +158,10 @@ plot_cart_tree <- function(tree) {
     scale_x_continuous(expand = expansion(mult = 0.2)) +
     scale_y_continuous(expand = expansion(mult = 0.2))
 }
+
+#' Start interactive Shiny App
+#' @export
+run_app <- function() {
+  app_dir <- system.file("app", package = "RandomForests")
+  shiny::runApp(app_dir, display.mode = "normal")
+}
