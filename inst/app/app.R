@@ -1,3 +1,4 @@
+
 # ==========================================================
 # SOURCES & LIBRARIES
 # ==========================================================
@@ -497,3 +498,8 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
+
+#' @export
+runApp <- function(){
+  shinyApp(ui, server)
+}
