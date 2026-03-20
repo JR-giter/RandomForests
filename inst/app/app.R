@@ -500,6 +500,6 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 
 #' @export
-runApp <- function(){
+runRFShinyApp <- function(){
   shinyApp(ui, server)
 }
