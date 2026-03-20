@@ -499,6 +499,33 @@ server <- function(input, output, session) {
 
 shinyApp(ui, server)
 
+# Main Prune function need to prune a CART.
+
+#' Prune a CART Tree using Cost-Complexity Pruning
+#'
+#' This function performs cost-complexity pruning on a fully grown CART tree.
+#' It generates a sequence of subtrees by iteratively removing the "weakest link"
+#' and uses K-fold cross-validation to select the optimal complexity parameter (lambda).
+#' The final output is the subtree that minimizes the cross-validated error.
+#'
+#' @param tree A root node object of a fully grown CART tree.
+#' @param lambdas A numeric vector of complexity parameters to evaluate. If
+#'   \code{NULL} (default), the function automatically extracts the unique
+#'   critical values from the tree's cost-complexity sequence.
+#' @param K An integer specifying the number of folds for cross-validation.
+#'   Default is 5.
+#' @param mode A character string indicating the type of tree: either
+#'   \code{"regression"} or \code{"classification"}. Default is \code{"regression"}.
+#'
+#' @return Returning a list containing:
+#' \itemize{
+#'   \item \code{optimal_tree}: The pruned tree object that performed best in CV.
+#'   \item \code{best_lambda}: The complexity parameter \code{lambda} that minimized the CV error.
+#'   \item \code{cv_values}: A numeric vector of the average cross-validation errors for each lambda.
+#'   \item \code{lambdas}: The vector of lambda values used during the process.
+#'   \item \code{sequence}: The full cost-complexity sequence of trees and their corresponding alphas.
+#' }
+#'
 #' @export
 runRFShinyApp <- function(){
   shinyApp(ui, server)
